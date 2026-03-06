@@ -1,0 +1,1605 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1920, initial-scale=1.0">
+  <title>Dashboard Audiovisual</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #080b12;
+      --bg2:       #0e1220;
+      --bg3:       #141826;
+      --border:    rgba(255,255,255,0.07);
+      --amber:     #f59e0b;
+      --blue:      #38bdf8;
+      --green:     #22c55e;
+      --red:       #ef4444;
+      --orange:    #fb923c;
+      --purple:    #a78bfa;
+      --yellow:    #fde047;
+      --text:      #e2e8f0;
+      --muted:     #64748b;
+      --font-display: 'Bebas Neue', sans-serif;
+      --font-ui:      'Barlow Condensed', sans-serif;
+      --font-mono:    'JetBrains Mono', monospace;
+    }
+
+    html, body {
+      width: 100%; height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-ui);
+      overflow: hidden;
+    }
+
+    /* ── SCAN LINE OVERLAY ── */
+    body::before {
+      content:'';
+      position:fixed; inset:0; pointer-events:none; z-index:999;
+      background: repeating-linear-gradient(
+        0deg, transparent, transparent 2px,
+        rgba(0,0,0,0.08) 2px, rgba(0,0,0,0.08) 4px
+      );
+    }
+
+    /* ── GRID NOISE TEXTURE ── */
+    body::after {
+      content:'';
+      position:fixed; inset:0; pointer-events:none; z-index:998;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+      opacity: 0.4;
+    }
+
+    #app {
+      display: grid;
+      grid-template-columns: 200px 1fr;
+      height: 100vh;
+    }
+
+    #left-panel {
+      display: flex;
+      flex-direction: column;
+      background: var(--bg2);
+      border-right: 1px solid rgba(245,158,11,0.25);
+      overflow: hidden;
+    }
+
+    /* ── TOPBAR (vertical) ── */
+    #topbar {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding: 16px 14px;
+      background: linear-gradient(180deg, rgba(245,158,11,0.1) 0%, transparent 100%);
+      border-bottom: 1px solid rgba(245,158,11,0.2);
+      flex-shrink: 0;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; }
+    .brand-icon {
+      width: 26px; height: 26px; flex-shrink: 0;
+      background: var(--amber);
+      clip-path: polygon(0 0, 80% 0, 100% 50%, 80% 100%, 0 100%, 20% 50%);
+      display: flex; align-items: center; justify-content: center;
+      animation: pulse-icon 3s ease-in-out infinite;
+    }
+    @keyframes pulse-icon { 0%,100%{opacity:1;} 50%{opacity:0.6;} }
+    .brand-icon svg { width:13px; height:13px; fill:#000; }
+    .brand-title {
+      font-family: var(--font-display);
+      font-size: 14px; letter-spacing: 2px; color: #fff; line-height: 1.1;
+    }
+    .brand-sub { font-size: 8px; letter-spacing: 1px; color: var(--amber); font-weight: 600; margin-top: 2px; }
+
+    .topbar-center { display: flex; flex-direction: column; gap: 3px; }
+    .live-dot {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 9px; letter-spacing: 2px; color: var(--red); font-weight: 700; font-family: var(--font-mono);
+    }
+    .live-dot::before {
+      content:''; width:6px; height:6px; border-radius:50%;
+      background: var(--red); animation: blink 1.2s ease-in-out infinite; box-shadow: 0 0 6px var(--red); flex-shrink:0;
+    }
+    @keyframes blink { 0%,100%{opacity:1;} 50%{opacity:0.2;} }
+
+    .topbar-right { display: flex; align-items: center; gap: 10px; }
+    #clock { font-family: var(--font-mono); font-size: 20px; font-weight: 700; color: #fff; letter-spacing: 1px; }
+    #clock-date { font-size: 9px; color: var(--muted); letter-spacing: 1px; font-family: var(--font-mono); margin-top: 1px; }
+
+    #refresh-timer { display: flex; align-items: center; gap: 6px; }
+    #refresh-label { font-size: 8px; letter-spacing: 1px; color: var(--muted); font-family: var(--font-mono); }
+    #refresh-ring { position: relative; width: 26px; height: 26px; }
+    #refresh-ring svg { width: 26px; height: 26px; transform: rotate(-90deg); }
+    #refresh-ring .track { fill: none; stroke: rgba(255,255,255,0.08); stroke-width: 3; }
+    #refresh-ring .progress { fill: none; stroke: var(--amber); stroke-width: 3; stroke-linecap: round; stroke-dasharray: 100; stroke-dashoffset: 0; transition: stroke-dashoffset 1s linear; }
+    #refresh-count { position: absolute; top:50%; left:50%; transform: translate(-50%,-50%); font-size: 7px; font-family: var(--font-mono); font-weight: 700; color: var(--amber); }
+
+    /* ── KPI VERTICAL ── */
+    #kpi-bar {
+      display: flex; flex-direction: column; flex: 1; overflow-y: auto;
+    }
+    #kpi-bar::-webkit-scrollbar { width: 2px; }
+    #kpi-bar::-webkit-scrollbar-thumb { background: var(--border); }
+
+    .kpi-card {
+      display: flex; align-items: center; gap: 12px;
+      padding: 11px 14px;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      position: relative;
+      transition: background 0.2s;
+    }
+    .kpi-card:hover { background: rgba(255,255,255,0.03); }
+    .kpi-card::before {
+      content:''; position:absolute; top:0; left:0; bottom:0; width:3px;
+      background: var(--kpi-color, var(--amber));
+    }
+    .kpi-num {
+      font-family: var(--font-display); font-size: 34px; line-height: 1;
+      color: var(--kpi-color, var(--amber));
+      text-shadow: 0 0 15px var(--kpi-color, var(--amber));
+      min-width: 40px; text-align: right;
+    }
+    .kpi-label { font-size: 8px; letter-spacing: 1.5px; color: var(--muted); font-weight: 600; text-transform: uppercase; }
+    .kpi-sublabel { font-size: 12px; color: var(--text); font-weight: 600; margin-top: 2px; line-height: 1.2; }
+    .kpi-glow { display: none; }
+
+    #last-update-bar {
+      font-size: 8px; font-family: var(--font-mono); color: var(--muted);
+      padding: 7px 14px; border-top: 1px solid var(--border); flex-shrink: 0;
+    }
+    #last-update { display: none; }
+
+    /* ── ESCALA DO DIA ── */
+    #escala-section {
+      border-top: 1px solid rgba(255,255,255,0.06);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      flex-shrink: 0;
+      max-height: 46vh;
+    }
+    #escala-header {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 8px 14px 6px;
+      background: rgba(56,189,248,0.06);
+      border-bottom: 1px solid rgba(56,189,248,0.12);
+      flex-shrink: 0;
+    }
+    #escala-icon { font-size: 11px; }
+    #escala-title {
+      font-size: 9px;
+      letter-spacing: 2px;
+      font-weight: 700;
+      color: var(--blue);
+      flex: 1;
+    }
+    #escala-badge {
+      font-size: 9px;
+      font-family: var(--font-mono);
+      color: var(--muted);
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      padding: 1px 7px;
+      border-radius: 10px;
+    }
+    #escala-list {
+      overflow-y: auto;
+      flex: 1;
+    }
+    #escala-list::-webkit-scrollbar { width: 2px; }
+    #escala-list::-webkit-scrollbar-thumb { background: var(--border); }
+    .escala-item {
+      padding: 7px 14px 6px;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      transition: background 0.15s;
+      position: relative;
+    }
+    .escala-item:hover { background: rgba(56,189,248,0.05); }
+    .escala-item.escala-now {
+      background: rgba(56,189,248,0.08);
+      border-left: 3px solid var(--blue);
+      padding-left: 11px;
+    }
+    .escala-item.escala-past { opacity: 0.45; }
+    .escala-time {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--blue);
+      margin-bottom: 2px;
+    }
+    .escala-item.escala-now .escala-time { color: #38bdf8; }
+    .escala-match {
+      font-size: 10.5px;
+      font-weight: 600;
+      color: #e2e8f0;
+      line-height: 1.35;
+      margin-bottom: 3px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .escala-av {
+      font-size: 9.5px;
+      color: #94a3b8;
+      font-weight: 600;
+    }
+    .escala-av span {
+      display: inline-block;
+      background: rgba(167,139,250,0.12);
+      color: #c4b5fd;
+      border: 1px solid rgba(167,139,250,0.2);
+      padding: 1px 6px;
+      border-radius: 3px;
+      font-size: 9px;
+      margin-right: 3px;
+    }
+    .escala-empty {
+      padding: 16px 14px;
+      font-size: 10px;
+      color: var(--muted);
+      font-family: var(--font-mono);
+      letter-spacing: 1px;
+    }
+      transition: stroke-dashoffset 1s linear;
+    }
+    #refresh-count {
+      position: absolute; top:50%; left:50%;
+      transform: translate(-50%,-50%);
+      font-size: 7px; font-family: var(--font-mono); font-weight: 700;
+      color: var(--amber);
+    }
+
+    /* ── MAIN CONTENT ── */
+    #main-content {
+      display: grid;
+      grid-template-columns: 1fr 400px;
+      overflow: hidden;
+    }
+
+    /* ── KANBAN ── */
+    #pipeline {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      border-right: 1px solid var(--border);
+    }
+
+    #pipeline-header {
+      padding: 10px 20px 8px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg2);
+    }
+    .section-title {
+      font-family: var(--font-display);
+      font-size: 18px;
+      letter-spacing: 3px;
+      color: var(--muted);
+    }
+    .section-count {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-family: var(--font-mono);
+      color: var(--muted);
+    }
+
+    #kanban {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 0;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .kanban-col {
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .kanban-col:last-child { border-right: none; }
+
+    .col-header {
+      padding: 8px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg2);
+      position: sticky; top:0;
+      flex-shrink: 0;
+    }
+    .col-name {
+      font-size: 10px;
+      letter-spacing: 2px;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--col-color, var(--muted));
+    }
+    .col-badge {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--col-color, var(--muted));
+      background: var(--col-bg, rgba(255,255,255,0.05));
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+    .col-stripe {
+      height: 2px;
+      background: var(--col-color, var(--muted));
+      flex-shrink: 0;
+    }
+
+    .col-cards {
+      flex: 1;
+      overflow-y: auto;
+      padding: 6px 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .col-cards::-webkit-scrollbar { width: 3px; }
+    .col-cards::-webkit-scrollbar-track { background: transparent; }
+    .col-cards::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+    /* ── CARDS ── */
+    .card {
+      background: #0d1526;
+      border: 1px solid rgba(255,255,255,0.07);
+      border-left: 4px solid var(--card-color, var(--muted));
+      border-radius: 6px;
+      padding: 10px 12px 9px;
+      transition: background 0.15s;
+      position: relative;
+      animation: fadeIn 0.3s ease;
+      cursor: default;
+    }
+    .card:hover { background: #162035; }
+    @keyframes fadeIn { from{opacity:0;transform:translateY(3px);} to{opacity:1;transform:none;} }
+    .card.urgent {
+      border-left-color: var(--red);
+      background: rgba(239,68,68,0.08);
+    }
+    .card.overdue {
+      border-left-color: var(--red);
+      background: rgba(239,68,68,0.11);
+    }
+    .card-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: #e8edf5;
+      line-height: 1.45;
+      margin-bottom: 7px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .card-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      align-items: center;
+    }
+    .card-chip {
+      font-size: 10px;
+      padding: 2px 8px;
+      border-radius: 3px;
+      font-weight: 600;
+      font-family: var(--font-ui);
+      white-space: nowrap;
+      line-height: 1.6;
+    }
+    .chip-area {
+      background: rgba(56,189,248,0.13);
+      color: #7dd3fc;
+      border: 1px solid rgba(56,189,248,0.22);
+    }
+    .chip-type {
+      background: rgba(167,139,250,0.13);
+      color: #c4b5fd;
+      border: 1px solid rgba(167,139,250,0.22);
+    }
+    .chip-editor {
+      background: rgba(255,255,255,0.09);
+      color: #f1f5f9;
+      border: 1px solid rgba(255,255,255,0.15);
+      font-weight: 700;
+    }
+    .chip-deadline {
+      background: rgba(245,158,11,0.13);
+      color: #fcd34d;
+      border: 1px solid rgba(245,158,11,0.22);
+    }
+    .chip-deadline.urgent { background: rgba(239,68,68,0.18); color: #fca5a5; border-color: rgba(239,68,68,0.35); }
+    .chip-deadline.warn   { background: rgba(251,146,60,0.18); color: #fdba74; border-color: rgba(251,146,60,0.35); }
+
+    /* ── SIDEBAR ── */
+    #sidebar {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: var(--bg);
+    }
+
+    .sidebar-section {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .sidebar-section:first-child {
+      flex: 1;
+      border-bottom: 1px solid var(--border);
+    }
+    .sidebar-section:last-child {
+      flex: 1;
+    }
+
+    .sidebar-hdr {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg2);
+      flex-shrink: 0;
+    }
+    .sidebar-hdr-icon {
+      font-size: 14px;
+    }
+    .sidebar-hdr-title {
+      font-family: var(--font-display);
+      font-size: 15px;
+      letter-spacing: 3px;
+      color: var(--muted);
+      flex: 1;
+    }
+    .sidebar-hdr-badge {
+      font-size: 10px;
+      font-family: var(--font-mono);
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 2px 8px;
+      border-radius: 3px;
+    }
+
+    /* ── EDITOR RANKING ── */
+    .editor-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .editor-list::-webkit-scrollbar { width: 3px; }
+    .editor-list::-webkit-scrollbar-thumb { background: var(--border); }
+
+    .editor-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 12px;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      position: relative;
+      overflow: hidden;
+      animation: fadeIn 0.4s ease;
+    }
+    .editor-rank {
+      font-family: var(--font-display);
+      font-size: 20px;
+      color: var(--muted);
+      min-width: 22px;
+      text-align: center;
+    }
+    .editor-rank.top1 { color: var(--red); text-shadow: 0 0 10px var(--red); }
+    .editor-rank.top2 { color: var(--orange); }
+    .editor-rank.top3 { color: var(--amber); }
+
+    .editor-info { flex: 1; min-width: 0; }
+    .editor-name {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .editor-stats {
+      display: flex;
+      gap: 8px;
+      margin-top: 2px;
+    }
+    .stat-pill {
+      font-size: 9px;
+      font-family: var(--font-mono);
+      padding: 1px 5px;
+      border-radius: 2px;
+    }
+    .stat-open { background: rgba(56,189,248,0.12); color: var(--blue); }
+    .stat-late { background: rgba(239,68,68,0.12); color: var(--red); }
+    .stat-done { background: rgba(34,197,94,0.12); color: var(--green); }
+
+    .editor-bar {
+      position: absolute;
+      bottom: 0; left: 0;
+      height: 2px;
+      background: var(--bar-color, var(--amber));
+      transition: width 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .editor-count {
+      font-family: var(--font-display);
+      font-size: 26px;
+      color: var(--count-color, var(--text));
+      text-shadow: 0 0 15px var(--count-color, transparent);
+    }
+
+    /* ── DEADLINE ALERTS ── */
+    .alert-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .alert-list::-webkit-scrollbar { width: 3px; }
+    .alert-list::-webkit-scrollbar-thumb { background: var(--border); }
+
+    .alert-item {
+      padding: 9px 12px;
+      background: var(--bg2);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 5px;
+      border-left: 3px solid var(--alert-color, var(--amber));
+      animation: fadeIn 0.4s ease;
+    }
+    .alert-item.critical { 
+      border-left-color: var(--red);
+      background: rgba(239,68,68,0.07);
+      animation: criticalPulse 1.5s ease-in-out infinite;
+    }
+    @keyframes criticalPulse {
+      0%,100%{ opacity:1; } 50%{ opacity:0.75; }
+    }
+    .alert-item.warning { border-left-color: var(--orange); background: rgba(251,146,60,0.05); }
+
+    .alert-title {
+      font-size: 11.5px;
+      font-weight: 700;
+      color: #fff;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      line-height: 1.4;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      margin-bottom: 3px;
+    }
+    .alert-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 4px;
+    }
+    .alert-time {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--alert-color, var(--amber));
+    }
+    .alert-area {
+      font-size: 9px;
+      color: var(--muted);
+      font-family: var(--font-mono);
+      background: rgba(255,255,255,0.05);
+      padding: 1px 5px;
+      border-radius: 2px;
+    }
+    .alert-editor {
+      font-size: 10px;
+      color: #94a3b8;
+      margin-top: 1px;
+    }
+
+    /* ── LOADING / ERROR ── */
+    #overlay {
+      position: fixed; inset:0;
+      background: var(--bg);
+      display: flex; align-items: center; justify-content: center;
+      flex-direction: column;
+      gap: 20px;
+      z-index: 100;
+      transition: opacity 0.5s;
+    }
+    #overlay.hidden { opacity:0; pointer-events:none; }
+    .loader-text {
+      font-family: var(--font-display);
+      font-size: 28px;
+      letter-spacing: 6px;
+      color: var(--amber);
+      animation: flicker 1.5s ease-in-out infinite;
+    }
+    @keyframes flicker {
+      0%,100%{opacity:1;} 50%{opacity:0.5;} 60%{opacity:1;} 75%{opacity:0.6;}
+    }
+    .loader-sub { font-size: 12px; color: var(--muted); letter-spacing: 2px; font-family: var(--font-mono); }
+
+    #config-banner {
+      position: fixed; bottom:0; left:0; right:0;
+      background: rgba(239,68,68,0.9);
+      color:#fff; text-align:center;
+      padding: 8px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      letter-spacing: 1px;
+      z-index:200;
+      display:none;
+    }
+
+    .empty-col {
+      padding: 20px 10px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 11px;
+      letter-spacing: 1px;
+      font-family: var(--font-mono);
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── CONFIG — EDITE AQUI ────────────────────────────────── -->
+<script>
+const CONFIG = {
+  apiKey:    'pat0fvz0QMGqk34O1.caee3d06115f2157dad4e7b41005939f5556dc905653ea8d488e9f6daac383a8',  // pat...
+  baseId:    'app7MivxEoENyELzk',                          // app...
+  tableName: 'Pedidos',                  // Nome exato da tabela
+  refreshMs: 5 * 60 * 1000,                          // 5 minutos
+
+  // Nomes dos campos — ajuste se necessário
+  f: {
+    title:       'Nome do Pedido',
+    deadline:    'Prazo',
+    owner:       'Dono do Pedido',
+    status:      'Status',
+    area:        'Área do Pedido',
+    editor:      'Responsável Audiovisual (incluído pelo próprio time)',
+    editorLookup:'Colaboradores Geral copy',
+    editorAux:   'Responsável Auxiliar',
+    type:        'Formato',
+  },
+
+  // Nomes EXATOS como aparecem no campo Colaboradores Geral copy do Airtable
+  editores: [
+    'João Victor Vasconcellos do Amaral',
+    'Izabelle Christine de Oliveira',
+    'Daniel Vinagre Ferreira',
+    'Felippe Pereira dos Santos',
+    'Isabella Bomfim',
+    'Mozart Maia',
+    'Breno do Amparo Vidal',
+    'Jen Harmbacher dos Santos',
+    'Gabriel Souza',
+    'Gabriel Soares de Souza',
+    'Matheus de Abreu Taranto',
+    'Arthur Rangel Berbat',
+    'Maria Julia Wilman Schiller',
+    'Alícia Quintanilha Barbosa',
+    'Alicia Quintanilha Barbosa',
+    'Thamyres Correia Amorim',
+  ],
+};
+</script>
+<!-- ─────────────────────────────────────────────────────── -->
+
+<div id="overlay">
+  <div class="loader-text">⬡ CARREGANDO</div>
+  <div class="loader-sub">CONECTANDO AO AIRTABLE...</div>
+</div>
+<div id="config-banner"></div>
+
+<div id="app">
+
+  <!-- PAINEL LATERAL ESQUERDO -->
+  <div id="left-panel">
+    <div id="topbar">
+      <div class="brand">
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24"><path d="M4 4l6 8-6 8h4l4-5.3 4 5.3h4l-6-8 6-8h-4l-4 5.3L8 4z"/></svg>
+        </div>
+        <div>
+          <div class="brand-title">DASHBOARD<br>AUDIOVISUAL</div>
+          <div class="brand-sub">PRODUÇÃO EM TEMPO REAL</div>
+        </div>
+      </div>
+      <div class="topbar-center">
+        <div class="live-dot">AO VIVO</div>
+        <div id="last-update">—</div>
+      </div>
+      <div class="topbar-right">
+        <div>
+          <div id="clock">00:00:00</div>
+          <div id="clock-date">—</div>
+        </div>
+        <div id="refresh-timer">
+          <div id="refresh-label">REFRESH</div>
+          <div id="refresh-ring">
+            <svg viewBox="0 0 36 36">
+              <circle class="track" cx="18" cy="18" r="15.9"/>
+              <circle id="ring-progress" class="progress" cx="18" cy="18" r="15.9"/>
+            </svg>
+            <div id="refresh-count">5:00</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- KPI VERTICAL -->
+    <div id="kpi-bar">
+      <div class="kpi-card" style="--kpi-color: var(--yellow)">
+        <div class="kpi-num" id="kpi-nao-iniciado">—</div>
+        <div class="kpi-info">
+          <div class="kpi-label">demandas</div>
+          <div class="kpi-sublabel">Não Iniciadas</div>
+        </div>
+      </div>
+      <div class="kpi-card" style="--kpi-color: var(--blue)">
+        <div class="kpi-num" id="kpi-em-andamento">—</div>
+        <div class="kpi-info">
+          <div class="kpi-label">demandas</div>
+          <div class="kpi-sublabel">Em Andamento</div>
+        </div>
+      </div>
+      <div class="kpi-card" style="--kpi-color: var(--orange)">
+        <div class="kpi-num" id="kpi-ajuste">—</div>
+        <div class="kpi-info">
+          <div class="kpi-label">demandas</div>
+          <div class="kpi-sublabel">Em Ajuste</div>
+        </div>
+      </div>
+      <div class="kpi-card" style="--kpi-color: var(--purple)">
+        <div class="kpi-num" id="kpi-aprovacao">—</div>
+        <div class="kpi-info">
+          <div class="kpi-label">demandas</div>
+          <div class="kpi-sublabel">Aguard. Aprovação</div>
+        </div>
+      </div>
+      <div class="kpi-card" style="--kpi-color: var(--red)">
+        <div class="kpi-num" id="kpi-fora-prazo">—</div>
+        <div class="kpi-info">
+          <div class="kpi-label">demandas</div>
+          <div class="kpi-sublabel">Fora do Prazo</div>
+        </div>
+      </div>
+      <div class="kpi-card" style="--kpi-color: var(--green)">
+        <div class="kpi-num" id="kpi-pronto">—</div>
+        <div class="kpi-info">
+          <div class="kpi-label">prontas</div>
+          <div class="kpi-sublabel">Concluídas hoje</div>
+        </div>
+      </div>
+      <div class="kpi-card" style="--kpi-color: var(--amber)">
+        <div class="kpi-num" id="kpi-total">—</div>
+        <div class="kpi-info">
+          <div class="kpi-label">total ativo</div>
+          <div class="kpi-sublabel">Demandas Ativas</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ESCALA DO DIA -->
+    <div id="escala-section">
+      <div id="escala-header">
+        <span id="escala-icon">📡</span>
+        <span id="escala-title">ESCALA DO DIA</span>
+        <span id="escala-badge">—</span>
+      </div>
+      <div id="escala-list"></div>
+    </div>
+
+    <div id="last-update-bar">—</div>
+  </div>
+
+  <!-- CONTEÚDO PRINCIPAL -->
+  <div id="main-content">
+
+    <!-- PIPELINE -->
+    <div id="pipeline">
+      <div id="pipeline-header">
+        <div class="section-title">PIPELINE DE PRODUÇÃO</div>
+        <div id="pipeline-total-badge" class="section-count">—</div>
+      </div>
+      <div id="kanban">
+
+        <div class="kanban-col">
+          <div class="col-stripe" style="background: var(--yellow)"></div>
+          <div class="col-header" style="--col-color: var(--yellow); --col-bg: rgba(253,224,71,0.1)">
+            <span class="col-name">Não Iniciado</span>
+            <span class="col-badge" id="count-nao-iniciado">0</span>
+          </div>
+          <div class="col-cards" id="col-nao-iniciado"></div>
+        </div>
+
+        <div class="kanban-col">
+          <div class="col-stripe" style="background: var(--blue)"></div>
+          <div class="col-header" style="--col-color: var(--blue); --col-bg: rgba(56,189,248,0.1)">
+            <span class="col-name">Em Andamento</span>
+            <span class="col-badge" id="count-em-andamento">0</span>
+          </div>
+          <div class="col-cards" id="col-em-andamento"></div>
+        </div>
+
+        <div class="kanban-col">
+          <div class="col-stripe" style="background: var(--orange)"></div>
+          <div class="col-header" style="--col-color: var(--orange); --col-bg: rgba(249,115,22,0.1)">
+            <span class="col-name">Em Ajuste</span>
+            <span class="col-badge" id="count-ajuste">0</span>
+          </div>
+          <div class="col-cards" id="col-ajuste"></div>
+        </div>
+
+        <div class="kanban-col">
+          <div class="col-stripe" style="background: var(--purple)"></div>
+          <div class="col-header" style="--col-color: var(--purple); --col-bg: rgba(167,139,250,0.1)">
+            <span class="col-name">Aguard. Aprovação</span>
+            <span class="col-badge" id="count-aprovacao">0</span>
+          </div>
+          <div class="col-cards" id="col-aprovacao"></div>
+        </div>
+
+        <div class="kanban-col">
+          <div class="col-stripe" style="background: var(--red)"></div>
+          <div class="col-header" style="--col-color: var(--red); --col-bg: rgba(239,68,68,0.1)">
+            <span class="col-name">⚠ Fora do Prazo</span>
+            <span class="col-badge" id="count-fora-prazo">0</span>
+          </div>
+          <div class="col-cards" id="col-fora-prazo"></div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- SIDEBAR -->
+    <div id="sidebar">
+
+      <!-- EDITOR OVERLOAD -->
+      <div class="sidebar-section">
+        <div class="sidebar-hdr">
+          <span class="sidebar-hdr-icon">🔥</span>
+          <span class="sidebar-hdr-title">SOBRECARGA EDITORES</span>
+          <span class="sidebar-hdr-badge" id="editor-total-badge">—</span>
+        </div>
+        <div class="editor-list" id="editor-list"></div>
+      </div>
+
+      <!-- DEADLINE ALERTS -->
+      <div class="sidebar-section">
+        <div class="sidebar-hdr">
+          <span class="sidebar-hdr-icon">⏰</span>
+          <span class="sidebar-hdr-title">PRAZOS CRÍTICOS</span>
+          <span class="sidebar-hdr-badge" id="alerts-badge">—</span>
+        </div>
+        <div class="alert-list" id="alert-list"></div>
+      </div>
+
+    </div>
+  </div>
+</div><!-- fim #main-content -->
+</div><!-- fim #app -->
+
+<script>
+// ── STATUS MAP ─────────────────────────────────────────────
+const STATUS_MAP = {
+  'Não Iniciado - Produção': { col: 'nao-iniciado', color: 'var(--yellow)' },
+  'Não Iniciado - Reprisa':  { col: 'nao-iniciado', color: 'var(--yellow)' },
+  'Não Iniciado - Geral':    { col: 'nao-iniciado', color: 'var(--yellow)' },
+  'Não Iniciado':            { col: 'nao-iniciado', color: 'var(--yellow)' },
+  'Em Andamento':            { col: 'em-andamento', color: 'var(--blue)'   },
+  'Em Ajuste':               { col: 'ajuste',       color: 'var(--orange)' },
+  'Aguardando Aprovação':    { col: 'aprovacao',    color: 'var(--purple)' },
+  'Fora do Prazo':           { col: 'fora-prazo',   color: 'var(--red)'   },
+  'Pronto':                  { col: null,            color: 'var(--green)' },
+  'Cancelado':               { col: null,            color: 'var(--muted)' },
+};
+
+// ── HELPERS ────────────────────────────────────────────────
+const $ = id => document.getElementById(id);
+
+/**
+ * Extrai o valor de texto de um campo do Airtable,
+ * independente do tipo: texto, Linked Record, Collaborator, array, etc.
+ */
+function fieldText(value) {
+  if (value === null || value === undefined) return '';
+  // Collaborator: { name: "...", email: "..." }
+  if (typeof value === 'object' && !Array.isArray(value)) {
+    return value.name || value.title || value.email || String(value);
+  }
+  // Array (Linked Records, Multiple Collaborators, Multiple Select)
+  if (Array.isArray(value)) {
+    return value.map(v => {
+      if (typeof v === 'object' && v !== null) {
+        return v.name || v.title || v.email || '';
+      }
+      return String(v);
+    }).filter(Boolean).join(', ');
+  }
+  return String(value);
+}
+
+function formatDeadline(dateStr) {
+  if (!dateStr) return null;
+  const d = new Date(dateStr);
+  if (isNaN(d)) return null;
+  return d;
+}
+
+function hoursUntil(date) {
+  return (date - new Date()) / 3600000;
+}
+
+function deadlineLabel(date) {
+  if (!date) return null;
+  const h = hoursUntil(date);
+  if (h < 0) return { label: 'ATRASADO', cls: 'urgent' };
+  if (h < 4)  return { label: `${Math.ceil(h)}h restantes`, cls: 'urgent' };
+  if (h < 24) return { label: `${Math.ceil(h)}h restantes`, cls: 'warn' };
+  const days = Math.floor(h / 24);
+  return {
+    label: date.toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit' }) +
+           ' ' + date.toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' }),
+    cls: ''
+  };
+}
+
+function shortName(fullName) {
+  if (!fullName) return '—';
+  const parts = fullName.split(' ');
+  if (parts.length <= 2) return fullName;
+  return parts[0] + ' ' + parts[parts.length - 1];
+}
+
+function norm(s) {
+  return (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+}
+function isEditorDoTime(name) {
+  if (!name) return false;
+  const n = norm(name);
+  return CONFIG.editores.some(e => norm(e) === n);
+}
+
+// Cache de nomes de colaboradores: recId → nome
+const colaboradorCache = {};
+
+// Busca nomes de todos os colaboradores da tabela linkada
+async function preloadColaboradores() {
+  try {
+    let offset = null;
+    do {
+      const params = new URLSearchParams({ pageSize: 100 });
+      if (offset) params.set('offset', offset);
+      const url = `https://api.airtable.com/v0/${CONFIG.baseId}/Colaboradores%20Geral?${params}`;
+      const res = await fetch(url, { headers: { Authorization: `Bearer ${CONFIG.apiKey}` } });
+      if (!res.ok) break;
+      const data = await res.json();
+      (data.records || []).forEach(r => {
+        const nome = r.fields['Name'] || r.fields['Nome'] || r.fields['name'] || '';
+        if (nome) colaboradorCache[r.id] = nome;
+      });
+      offset = data.offset;
+    } while (offset);
+    console.log('✅ Colaboradores carregados:', Object.keys(colaboradorCache).length, Object.values(colaboradorCache).slice(0,5));
+  } catch(e) {
+    console.warn('⚠ Não foi possível carregar tabela Colaboradores:', e.message);
+  }
+}
+
+// Extrai nomes do editor — resolve linked record IDs via cache
+function getEditorNames(rec) {
+  const f = CONFIG.f;
+
+  // Campo "Responsável Audiovisual (incluído pelo próprio time)" → linked records
+  const linked = rec.fields[f.editor];
+  if (linked && Array.isArray(linked) && linked.length > 0) {
+    const names = linked.map(v => {
+      if (typeof v === 'string' && v.startsWith('rec')) return colaboradorCache[v] || null;
+      return fieldText(v) || null;
+    }).filter(Boolean);
+    if (names.length > 0) return names;
+  }
+
+  // Fallback: lookup field (Colaboradores Geral copy)
+  const lookup = rec.fields[f.editorLookup];
+  if (lookup && Array.isArray(lookup) && lookup.length > 0) {
+    const names = lookup.map(v => fieldText(v)).filter(s => s && !s.startsWith('rec'));
+    if (names.length > 0) return names;
+  }
+
+  // Fallback: campo texto simples
+  const aux = rec.fields[f.editorAux];
+  if (aux) {
+    const name = fieldText(aux);
+    if (name && !name.startsWith('rec')) return [name];
+  }
+  return [];
+}
+
+function makeCard(rec) {
+  const f = CONFIG.f;
+  const title    = fieldText(rec.fields[f.title])  || 'Sem título';
+  const area     = fieldText(rec.fields[f.area])   || '';
+  const type     = fieldText(rec.fields[f.type])   || '';
+  const editorNames = getEditorNames(rec);
+  const editor = editorNames.map(n => shortName(n)).join(', ') || '';
+  const status   = fieldText(rec.fields[f.status]) || '';
+  const deadline = formatDeadline(rec.fields[f.deadline]);
+
+  const dl = deadline ? deadlineLabel(deadline) : null;
+  const h  = deadline ? hoursUntil(deadline) : 999;
+
+  const colInfo   = STATUS_MAP[status] || { color: 'var(--muted)' };
+  const naoIniciado = status.includes('Não Iniciado');
+  const urgent    = h < 0 && !naoIniciado && status !== 'Pronto';
+  const overdue   = status === 'Fora do Prazo';
+
+  const div = document.createElement('div');
+  div.className = 'card' + (overdue ? ' overdue' : urgent ? ' urgent' : '');
+  div.style.setProperty('--card-color', colInfo.color);
+
+  // Chip de prazo: Não Iniciado mostra prazo neutro, sem alarme vermelho
+  const dlChip = dl ? `<span class="card-chip chip-deadline ${naoIniciado ? '' : dl.cls}">${dl.label}</span>` : '';
+
+  let chips = '';
+  if (area)   chips += `<span class="card-chip chip-area">${area}</span>`;
+  if (type)   chips += `<span class="card-chip chip-type">${type}</span>`;
+  if (editor) chips += `<span class="card-chip chip-editor">${editor}</span>`;
+  chips += dlChip;
+
+  div.innerHTML = `
+    <div class="card-title">${title}</div>
+    <div class="card-meta">${chips}</div>
+  `;
+  return div;
+}
+
+// ── EDITOR WORKLOAD ────────────────────────────────────────
+function buildEditorList(records) {
+  const f = CONFIG.f;
+  const map = {};
+
+  // DEBUG — loga todos os nomes únicos de editores que chegam da API
+  const nomesReais = new Set();
+  records.forEach(rec => {
+    getEditorNames(rec).forEach(n => nomesReais.add(n));
+    // também loga o raw do campo
+    const raw = rec.fields[CONFIG.f.editor];
+    if (raw && Array.isArray(raw)) raw.forEach(v => {
+      if (typeof v === 'string' && v.startsWith('rec') && !colaboradorCache[v]) {
+        console.warn('⚠ ID sem nome no cache:', v);
+      }
+    });
+  });
+  console.log('👤 Editores resolvidos:', [...nomesReais].sort());
+
+  records.forEach(rec => {
+    const status = fieldText(rec.fields[f.status]) || '';
+    const deadline = formatDeadline(rec.fields[f.deadline]);
+    if (status === 'Pronto') return;
+    const names = getEditorNames(rec);
+    names.forEach(name => {
+      if (!name || !isEditorDoTime(name)) return;
+      if (!map[name]) map[name] = { open:0, late:0, done:0 };
+      map[name].open++;
+      if (deadline && hoursUntil(deadline) < 0) map[name].late++;
+    });
+  });
+
+  records.forEach(rec => {
+    const status = fieldText(rec.fields[f.status]) || '';
+    if (status !== 'Pronto') return;
+    const names = getEditorNames(rec);
+    names.forEach(name => {
+      if (!name || !isEditorDoTime(name)) return;
+      if (!map[name]) map[name] = { open:0, late:0, done:0 };
+      map[name].done++;
+    });
+  });
+
+  const sorted = Object.entries(map)
+    .filter(([,v]) => v.open > 0)
+    .sort(([,a],[,b]) => b.open - a.open);
+
+  const list = $('editor-list');
+  list.innerHTML = '';
+  $('editor-total-badge').textContent = sorted.length + ' editores';
+
+  const maxOpen = sorted[0] ? sorted[0][1].open : 1;
+
+  sorted.forEach(([name, stats], i) => {
+    const pct = (stats.open / maxOpen) * 100;
+    const rankClass = i === 0 ? 'top1' : i === 1 ? 'top2' : i === 2 ? 'top3' : '';
+    const barColor = i === 0 ? 'var(--red)' : i === 1 ? 'var(--orange)' : i === 2 ? 'var(--amber)' : 'var(--blue)';
+    const countColor = barColor;
+
+    const row = document.createElement('div');
+    row.className = 'editor-row';
+    row.style.setProperty('--bar-color', barColor);
+    row.innerHTML = `
+      <div class="editor-rank ${rankClass}">${i + 1}</div>
+      <div class="editor-info">
+        <div class="editor-name">${shortName(name)}</div>
+        <div class="editor-stats">
+          <span class="stat-pill stat-open">${stats.open} abertas</span>
+          ${stats.late > 0 ? `<span class="stat-pill stat-late">${stats.late} atrasadas</span>` : ''}
+          ${stats.done > 0 ? `<span class="stat-pill stat-done">${stats.done} prontas</span>` : ''}
+        </div>
+      </div>
+      <div class="editor-count" style="--count-color: ${countColor}">${stats.open}</div>
+      <div class="editor-bar" style="width: ${pct}%"></div>
+    `;
+    list.appendChild(row);
+  });
+
+  if (sorted.length === 0) {
+    list.innerHTML = '<div class="empty-col">Nenhum editor com demanda aberta</div>';
+  }
+}
+
+// ── DEADLINE ALERTS ────────────────────────────────────────
+function buildAlerts(records) {
+  const f = CONFIG.f;
+
+  const urgent = records
+    .filter(rec => {
+      const status = fieldText(rec.fields[f.status]) || '';
+      if (status === 'Pronto' || status === 'Cancelado') return false;
+      const d = formatDeadline(rec.fields[f.deadline]);
+      if (!d) return false;
+      const h = hoursUntil(d);
+      // Mostra: atrasado há no máximo 92h  OU  vai atrasar nas próximas 24h
+      return h >= -92 && h <= 24;
+    })
+    .map(rec => {
+      const d = formatDeadline(rec.fields[f.deadline]);
+      return { rec, h: hoursUntil(d), d };
+    })
+    .sort((a, b) => a.h - b.h);
+
+  const list = $('alert-list');
+  list.innerHTML = '';
+  $('alerts-badge').textContent = urgent.length + ' atenção';
+
+  urgent.forEach(({ rec, h, d }) => {
+    const f2 = CONFIG.f;
+    const title  = fieldText(rec.fields[f2.title])  || 'Sem título';
+    const area   = fieldText(rec.fields[f2.area])   || '—';
+    const editorNames = getEditorNames(rec);
+    const editor = editorNames.length > 0 ? shortName(editorNames[0]) : '—';
+    const status = fieldText(rec.fields[f2.status]) || '';
+
+    let timeLabel, cls;
+    if (h < 0) {
+      const abs = Math.abs(h);
+      timeLabel = abs < 1 ? 'ATRASADO < 1h' : `ATRASADO ${Math.floor(abs)}h`;
+      cls = 'critical';
+    } else if (h < 4) {
+      timeLabel = `${Math.ceil(h)}h RESTANTES`;
+      cls = 'critical';
+    } else if (h < 24) {
+      timeLabel = `${Math.ceil(h)}h restantes`;
+      cls = 'warning';
+    } else {
+      const dayH = Math.floor(h / 24);
+      timeLabel = `${dayH}d ${Math.floor(h % 24)}h restantes`;
+      cls = '';
+    }
+
+    const item = document.createElement('div');
+    item.className = `alert-item ${cls}`;
+    item.style.setProperty('--alert-color', cls === 'critical' ? 'var(--red)' : cls === 'warning' ? 'var(--orange)' : 'var(--amber)');
+    item.innerHTML = `
+      <div class="alert-title">${title}</div>
+      <div class="alert-editor">${editor} · ${status}</div>
+      <div class="alert-footer">
+        <span class="alert-time">${timeLabel}</span>
+        <span class="alert-area">${area}</span>
+      </div>
+    `;
+    list.appendChild(item);
+  });
+
+  if (urgent.length === 0) {
+    list.innerHTML = '<div class="empty-col" style="padding:16px">✓ Nenhum prazo crítico nas próximas 92h</div>';
+  }
+}
+
+// ── ESCALA DO DIA ──────────────────────────────────────────
+async function fetchEscala() {
+  const tableId = 'tblCiPmrBUZDpMxCr';
+
+  // Calcula o dia de hoje em BRT (UTC-3) como string YYYY-MM-DD
+  const now = new Date();
+  const brtNow = new Date(now.getTime() - 3 * 3600000);
+  const hojeStr = brtNow.toISOString().split('T')[0]; // ex: "2026-03-06"
+
+  let all = [], offset = null;
+  do {
+    const params = new URLSearchParams({ pageSize: 100 });
+    if (offset) params.set('offset', offset);
+    const res = await fetch(
+      `https://api.airtable.com/v0/${CONFIG.baseId}/${tableId}?${params}`,
+      { headers: { Authorization: `Bearer ${CONFIG.apiKey}` } }
+    );
+    if (!res.ok) { console.warn('Escala fetch error', res.status, await res.text()); break; }
+    const data = await res.json();
+    all = all.concat(data.records || []);
+    offset = data.offset;
+  } while (offset);
+
+  // Filtra pelo dia de hoje em BRT, client-side
+  const hoje = all.filter(ev => {
+    const inicio = ev.fields['Inicio do Evento BRT'] || ev.fields['Início do Evento BRT'] || '';
+    if (!inicio) return false;
+    // Converte o valor do campo para BRT e pega só a data
+    const d = new Date(inicio);
+    const dBRT = new Date(d.getTime() - 3 * 3600000);
+    return dBRT.toISOString().split('T')[0] === hojeStr;
+  });
+
+  // Ordena por horário
+  hoje.sort((a, b) => {
+    const ta = a.fields['Inicio do Evento BRT'] || '';
+    const tb = b.fields['Inicio do Evento BRT'] || '';
+    return ta < tb ? -1 : ta > tb ? 1 : 0;
+  });
+
+  console.log('📡 Total escala:', all.length, '| Hoje (' + hojeStr + '):', hoje.length);
+  if (hoje.length > 0) console.log('📡 Campos:', Object.keys(hoje[0].fields));
+  return hoje;
+}
+
+function buildEscala(events) {
+  const list = $('escala-list');
+  list.innerHTML = '';
+  $('escala-badge').textContent = events.length + ' eventos';
+
+  if (events.length === 0) {
+    list.innerHTML = '<div class="escala-empty">Nenhum evento hoje</div>';
+    return;
+  }
+
+  const now = new Date();
+
+  events.forEach(ev => {
+    const f = ev.fields;
+    const matchId = f['Match ID'] || f['Nome'] || f['Name'] || f['Evento'] || '—';
+    const inicio  = f['Inicio do Evento BRT'] || f['Início do Evento BRT'] || '';
+    // Campo Audiovisual pode ser texto ou lookup
+    const avRaw   = f['Audiovisual'] || f['Áudiovisual'] || f['Áudio Visual'] || '';
+    const av      = Array.isArray(avRaw)
+      ? avRaw.map(v => typeof v === 'object' ? (v.name || v.title || '') : String(v)).join(', ')
+      : String(avRaw || '');
+
+    let horaLabel = '';
+    let eventoDate = null;
+    if (inicio) {
+      eventoDate = new Date(inicio);
+      horaLabel = eventoDate.toLocaleTimeString('pt-BR', {
+        hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo'
+      });
+    }
+
+    // Considera evento "em andamento" por 3h a partir do início
+    const fimAprox = eventoDate ? new Date(eventoDate.getTime() + 3 * 3600000) : null;
+    const isNow  = eventoDate && now >= eventoDate && fimAprox && now <= fimAprox;
+    const isPast = fimAprox && now > fimAprox;
+
+    const avChips = av
+      ? av.split(/[,/]/).map(n => n.trim()).filter(Boolean).map(n => `<span>${n}</span>`).join('')
+      : '';
+
+    const cls = isNow ? 'escala-now' : isPast ? 'escala-past' : '';
+    const item = document.createElement('div');
+    item.className = `escala-item ${cls}`;
+    item.innerHTML = `
+      <div class="escala-time">${horaLabel || '—'}</div>
+      <div class="escala-match">${matchId}</div>
+      ${avChips ? `<div class="escala-av">${avChips}</div>` : ''}
+    `;
+    list.appendChild(item);
+  });
+}
+
+
+function buildKanban(records) {
+  const f = CONFIG.f;
+  const cols = {
+    'nao-iniciado': [],
+    'em-andamento': [],
+    'ajuste':       [],
+    'aprovacao':    [],
+    'fora-prazo':   [],
+  };
+
+  records.forEach(rec => {
+    const status = fieldText(rec.fields[f.status]) || '';
+    const info = STATUS_MAP[status];
+    if (!info || !info.col) return;
+    cols[info.col].push(rec);
+  });
+
+  // Sort each col: overdue/urgent first
+  Object.keys(cols).forEach(colKey => {
+    cols[colKey].sort((a, b) => {
+      const da = formatDeadline(a.fields[f.deadline]);
+      const db = formatDeadline(b.fields[f.deadline]);
+      if (!da && !db) return 0;
+      if (!da) return 1;
+      if (!db) return -1;
+      return da - db;
+    });
+  });
+
+  Object.entries(cols).forEach(([colKey, recs]) => {
+    const container = $(`col-${colKey}`);
+    const badge = $(`count-${colKey.replace('-','-')}`);
+    container.innerHTML = '';
+
+    if (badge) badge.textContent = recs.length;
+
+    if (recs.length === 0) {
+      container.innerHTML = '<div class="empty-col">— vazia —</div>';
+    } else {
+      recs.forEach(rec => {
+        container.appendChild(makeCard(rec));
+      });
+    }
+  });
+}
+
+// ── KPI UPDATE ─────────────────────────────────────────────
+async function updateKPIs(records) {
+  const f = CONFIG.f;
+  const counts = {
+    naoIniciado: 0, emAndamento: 0, ajuste: 0,
+    aprovacao: 0, foraPrazo: 0
+  };
+
+  records.forEach(rec => {
+    const s = fieldText(rec.fields[f.status]) || '';
+    if (s.includes('Não Iniciado')) counts.naoIniciado++;
+    else if (s === 'Em Andamento') counts.emAndamento++;
+    else if (s === 'Em Ajuste') counts.ajuste++;
+    else if (s === 'Aguardando Aprovação') counts.aprovacao++;
+    else if (s === 'Fora do Prazo') counts.foraPrazo++;
+  });
+
+  // Busca prontas de hoje separadamente
+  const today = new Date().toISOString().slice(0, 10);
+  const prontoFilter = encodeURIComponent(
+    `AND({Status}="Pronto", IS_SAME(DATETIME_PARSE({Status modificado pela última vez}), TODAY(), "day"))`
+  );
+  let prontoCount = '—';
+  try {
+    const res = await fetch(
+      `https://api.airtable.com/v0/${CONFIG.baseId}/${encodeURIComponent(CONFIG.tableName)}` +
+      `?pageSize=1&filterByFormula=${prontoFilter}`,
+      { headers: { Authorization: `Bearer ${CONFIG.apiKey}` } }
+    );
+    if (res.ok) {
+      const data = await res.json();
+      // Airtable não retorna count direto, então buscamos todos
+      const allPronto = await fetchFiltered(`AND({Status}="Pronto", IS_SAME({Status modificado pela última vez}, TODAY(), "day"))`);
+      prontoCount = allPronto.length;
+    }
+  } catch(e) { /* silencioso */ }
+
+  const set = (id, val) => { const el = $(id); if (el) el.textContent = val; };
+
+  set('kpi-nao-iniciado', counts.naoIniciado);
+  set('kpi-em-andamento', counts.emAndamento);
+  set('kpi-ajuste',       counts.ajuste);
+  set('kpi-aprovacao',    counts.aprovacao);
+  set('kpi-fora-prazo',   counts.foraPrazo);
+  set('kpi-pronto',       prontoCount);
+  set('kpi-total',        records.length);
+
+  const pipelineCount = counts.naoIniciado + counts.emAndamento + counts.ajuste + counts.aprovacao + counts.foraPrazo;
+  set('count-nao-iniciado', counts.naoIniciado);
+  set('count-em-andamento', counts.emAndamento);
+  set('count-ajuste',       counts.ajuste);
+  set('count-aprovacao',    counts.aprovacao);
+  set('count-fora-prazo',   counts.foraPrazo);
+  set('pipeline-total-badge', pipelineCount + ' demandas ativas');
+}
+
+// ── FETCH COM FILTRO ───────────────────────────────────────
+async function fetchFiltered(formula) {
+  const filter = encodeURIComponent(formula);
+  const url = base =>
+    `https://api.airtable.com/v0/${CONFIG.baseId}/${encodeURIComponent(CONFIG.tableName)}` +
+    `?pageSize=100` +
+    `&filterByFormula=${filter}` +
+    (base ? `&offset=${base}` : '');
+  let records = [];
+  let offset = null;
+  do {
+    const res = await fetch(url(offset), {
+      headers: { Authorization: `Bearer ${CONFIG.apiKey}` }
+    });
+    if (!res.ok) return records;
+    const data = await res.json();
+    records = records.concat(data.records || []);
+    offset = data.offset || null;
+  } while (offset);
+  return records;
+}
+
+// ── FETCH AIRTABLE ─────────────────────────────────────────
+async function fetchAll() {
+  const statusAtivos = [
+    'Não Iniciado - Produção',
+    'Não Iniciado - Reprisa',
+    'Não Iniciado - Geral',
+    'Não Iniciado',
+    'Em Andamento',
+    'Em Ajuste',
+    'Aguardando Aprovação',
+    'Fora do Prazo',
+  ];
+  const areasAtivas = [
+    'Conteúdos Especiais',
+    'Livemode',
+    'Redes',
+    'Transmissão',
+    'Promos',
+  ];
+
+  const formula =
+    `AND(` +
+      `OR(${statusAtivos.map(s => `{Status}="${s}"`).join(',')})` + `,` +
+      `OR(${areasAtivas.map(a => `{Área do Pedido}="${a}"`).join(',')})` +
+    `)`;
+
+  const url = base =>
+    `https://api.airtable.com/v0/${CONFIG.baseId}/${encodeURIComponent(CONFIG.tableName)}` +
+    `?pageSize=100` +
+    `&filterByFormula=${encodeURIComponent(formula)}` +
+    (base ? `&offset=${base}` : '');
+
+  let records = [];
+  let offset = null;
+
+  do {
+    const res = await fetch(url(offset), {
+      headers: { Authorization: `Bearer ${CONFIG.apiKey}` }
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error?.message || `HTTP ${res.status}`);
+    }
+    const data = await res.json();
+    records = records.concat(data.records || []);
+    offset = data.offset || null;
+  } while (offset);
+
+  return records;
+}
+
+async function refresh() {
+  try {
+    // Carrega nomes dos colaboradores linkados (se cache vazio)
+    if (Object.keys(colaboradorCache).length === 0) {
+      await preloadColaboradores();
+    }
+
+    const records = await fetchAll();
+
+    // ── DEBUG: loga os campos do 1º registro no console ───────
+    if (records.length > 0) {
+      console.group('🔍 AIRTABLE — Campos do 1º registro');
+      Object.entries(records[0].fields).forEach(([key, val]) => {
+        console.log(`"${key}":`, val);
+      });
+      console.groupEnd();
+    }
+    // ── DEBUG: mostra status únicos recebidos ─────────────────
+    if (records.length > 0) {
+      const statusUnicos = [...new Set(records.map(r => r.fields[CONFIG.f.status] || '(vazio)'))];
+      console.log('📊 Status recebidos da API:', statusUnicos);
+      console.log('📦 Total de registros:', records.length);
+    }
+    // ─────────────────────────────────────────────────────────
+    await updateKPIs(records);
+    buildKanban(records);
+    buildEditorList(records);
+    buildAlerts(records);
+
+    // Escala do dia (tabela separada)
+    try {
+      const escalaEvents = await fetchEscala();
+      buildEscala(escalaEvents);
+    } catch(e) {
+      console.warn('Erro ao carregar escala:', e.message);
+      $('escala-list').innerHTML = '<div class="escala-empty">Erro ao carregar escala</div>';
+    }
+
+    const now = new Date();
+    const set2 = (id, val) => { const el = $(id); if(el) el.textContent = val; };
+    set2('last-update', 'Atualizado às ' + now.toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit', second:'2-digit' }));
+    set2('last-update-bar', 'Atualizado às ' + now.toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit', second:'2-digit' }));
+
+    const overlay = $('overlay');
+    if (!overlay.classList.contains('hidden')) {
+      overlay.classList.add('hidden');
+    }
+  } catch (e) {
+    console.error('Airtable error:', e);
+    const banner = $('config-banner');
+    banner.style.display = 'block';
+    banner.textContent = '⚠ Erro ao conectar ao Airtable: ' + e.message + ' — Verifique CONFIG no código.';
+    $('overlay').classList.add('hidden');
+  }
+}
+
+// ── TIMER ──────────────────────────────────────────────────
+let timeLeft = CONFIG.refreshMs / 1000;
+const circumference = 2 * Math.PI * 15.9;
+
+function updateTimer() {
+  timeLeft--;
+  if (timeLeft <= 0) {
+    timeLeft = CONFIG.refreshMs / 1000;
+    refresh();
+  }
+  const mins = Math.floor(timeLeft / 60);
+  const secs = timeLeft % 60;
+  $('refresh-count').textContent = `${mins}:${secs.toString().padStart(2,'0')}`;
+
+  const pct = timeLeft / (CONFIG.refreshMs / 1000);
+  const offset = circumference * (1 - pct);
+  $('ring-progress').style.strokeDasharray = circumference;
+  $('ring-progress').style.strokeDashoffset = offset;
+}
+
+// ── CLOCK ──────────────────────────────────────────────────
+function updateClock() {
+  const now = new Date();
+  $('clock').textContent = now.toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+  $('clock-date').textContent = now.toLocaleDateString('pt-BR', { weekday:'short', day:'2-digit', month:'short' }).toUpperCase();
+}
+
+// ── INIT ───────────────────────────────────────────────────
+if (!CONFIG.apiKey.startsWith('pat') && !CONFIG.apiKey.startsWith('key')) {
+  const b = $('config-banner');
+  b.style.display = 'block';
+  b.textContent = '⚠ Configure sua API Key e Base ID no topo do arquivo HTML antes de abrir no browser.';
+  $('overlay').classList.add('hidden');
+} else {
+  refresh();
+}
+
+updateClock();
+setInterval(updateClock, 1000);
+setInterval(updateTimer, 1000);
+</script>
+</body>
+</html>
