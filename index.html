@@ -884,13 +884,183 @@
       display:none;
     }
 
-    .empty-col {
-      padding: 20px 10px;
-      text-align: center;
+    /* ── NAV PÁGINAS ── */
+    #page-nav {
+      display: flex; gap: 6px; margin-top: 4px; align-items: center;
+    }
+    .page-btn {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid var(--border);
       color: var(--muted);
-      font-size: 11px;
-      letter-spacing: 1px;
-      font-family: var(--font-mono);
+      font-family: var(--font-ui);
+      font-size: 10px; font-weight: 700;
+      letter-spacing: 0.5px;
+      padding: 5px 12px; border-radius: 4px;
+      cursor: pointer; transition: all 0.2s;
+      position: relative; overflow: hidden;
+    }
+    .page-btn:hover { background: rgba(255,255,255,0.1); color: var(--text); }
+    .page-btn.active {
+      background: rgba(245,158,11,0.15);
+      border-color: rgba(245,158,11,0.4);
+      color: var(--amber);
+    }
+    /* barra de progresso da alternância automática */
+    .page-btn.active::after {
+      content: '';
+      position: absolute; bottom: 0; left: 0; height: 2px;
+      background: var(--amber);
+      animation: pageCountdown 5s linear forwards;
+    }
+    @keyframes pageCountdown { from { width: 100%; } to { width: 0%; } }
+
+    /* ícone de alternância automática */
+    #auto-rotate-icon {
+      font-size: 9px; color: var(--muted);
+      letter-spacing: 1px; font-family: var(--font-mono);
+      opacity: 0.6;
+    }
+
+    /* ── PÁGINA 2 — PROJETOS COMERCIAIS AUDIOVISUAL ── */
+    #page2 {
+      display: none; flex-direction: column; overflow: hidden;
+      grid-column: 1 / -1; grid-row: 1; background: var(--bg);
+    }
+    #page2.active { display: flex; }
+    #main-content.hidden { display: none; }
+
+    #p2-header {
+      padding: 12px 24px 10px;
+      display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+      border-bottom: 1px solid var(--border); background: var(--bg2); flex-shrink: 0;
+    }
+    .p2-title {
+      font-family: var(--font-display); font-size: 22px;
+      letter-spacing: 4px; color: var(--muted); flex-shrink: 0;
+    }
+    #p2-tab-bar { display: flex; gap: 6px; flex-wrap: wrap; }
+    .p2-tab {
+      background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+      color: var(--muted); font-family: var(--font-ui);
+      font-size: 14px; font-weight: 700;
+      padding: 6px 16px; border-radius: 4px; cursor: pointer; transition: all 0.2s;
+    }
+    .p2-tab:hover { background: rgba(255,255,255,0.1); color: var(--text); }
+    .p2-tab.active {
+      background: rgba(56,189,248,0.15);
+      border-color: rgba(56,189,248,0.35); color: var(--blue);
+    }
+
+    /* KPIs executivos — grandes para TV */
+    #p2-kpis {
+      display: flex; border-bottom: 1px solid var(--border); flex-shrink: 0;
+    }
+    .p2-kpi {
+      flex: 1; padding: 18px 22px;
+      border-right: 1px solid var(--border);
+      display: flex; flex-direction: column; gap: 4px;
+    }
+    .p2-kpi:last-child { border-right: none; }
+    .p2-kpi-num {
+      font-family: var(--font-display); font-size: 52px; line-height: 1;
+      color: var(--kpi2-color, var(--text));
+    }
+    .p2-kpi-label { font-size: 11px; letter-spacing: 2px; color: var(--muted); font-weight: 700; }
+    .p2-kpi-sub   { font-size: 13px; color: var(--muted); }
+
+    /* Layout corpo: charts + tabela */
+    #p2-content {
+      flex: 1; display: grid;
+      grid-template-columns: 420px 1fr;
+      overflow: hidden;
+    }
+
+    /* Coluna esquerda — charts */
+    #p2-charts {
+      border-right: 1px solid var(--border);
+      overflow-y: auto; padding: 0;
+      background: var(--bg2);
+    }
+    #p2-charts::-webkit-scrollbar { width: 3px; }
+    #p2-charts::-webkit-scrollbar-thumb { background: var(--border); }
+
+    .p2-chart-section {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+    .p2-chart-title {
+      font-size: 10px; letter-spacing: 2px; color: var(--muted);
+      font-weight: 700; margin-bottom: 12px;
+    }
+
+    /* Barras horizontais — legíveis na TV */
+    .bar-row {
+      display: flex; align-items: center;
+      gap: 10px; margin-bottom: 10px;
+    }
+    .bar-label {
+      font-size: 13px; font-weight: 600; color: var(--text);
+      min-width: 150px; max-width: 150px;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .bar-track {
+      flex: 1; height: 18px; background: rgba(255,255,255,0.05);
+      border-radius: 3px; overflow: hidden;
+    }
+    .bar-fill {
+      height: 100%; border-radius: 3px;
+      transition: width 0.8s cubic-bezier(0.4,0,0.2,1);
+    }
+    .bar-count {
+      font-family: var(--font-mono); font-size: 13px;
+      color: var(--text); min-width: 28px; text-align: right; font-weight: 700;
+    }
+
+    /* Tabela direita — TV-friendly */
+    #p2-body {
+      flex: 1; overflow: auto; background: var(--bg);
+    }
+    #p2-body::-webkit-scrollbar { width: 4px; height: 4px; }
+    #p2-body::-webkit-scrollbar-thumb { background: var(--border); }
+
+    #p2-table {
+      width: 100%; border-collapse: collapse;
+      font-family: var(--font-ui); font-size: 15px;
+    }
+    #p2-table thead {
+      position: sticky; top: 0; z-index: 10; background: var(--bg2);
+    }
+    #p2-table th {
+      padding: 12px 18px; text-align: left;
+      font-size: 10px; letter-spacing: 2px;
+      color: var(--muted); font-weight: 700;
+      border-bottom: 1px solid var(--border); white-space: nowrap;
+    }
+    #p2-table td {
+      padding: 11px 18px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      vertical-align: middle; color: var(--text);
+    }
+    #p2-table tbody tr:hover { background: rgba(255,255,255,0.04); }
+
+    .tipo-chip {
+      display: inline-block; padding: 3px 12px; border-radius: 3px;
+      font-size: 12px; font-weight: 700; white-space: nowrap;
+    }
+    .tipo-gravacao-bc    { background:rgba(249,115,22,0.18); color:#fb923c; border:1px solid rgba(249,115,22,0.25); }
+    .tipo-edicao-bc      { background:rgba(34,197,94,0.12);  color:#4ade80; border:1px solid rgba(34,197,94,0.2); }
+    .tipo-edicao-redes   { background:rgba(56,189,248,0.12); color:#38bdf8; border:1px solid rgba(56,189,248,0.2); }
+    .tipo-gravacao-redes { background:rgba(251,191,36,0.12); color:#fbbf24; border:1px solid rgba(251,191,36,0.2); }
+    .tipo-outro          { background:rgba(100,116,139,0.12);color:#94a3b8; border:1px solid var(--border); }
+
+    .excecao-sim {
+      display:inline-block; background:rgba(167,139,250,0.15); color:var(--purple);
+      border:1px solid rgba(167,139,250,0.25); border-radius:3px;
+      padding:2px 10px; font-size:12px; font-weight:700;
+    }
+    #p2-loading {
+      padding: 80px; text-align: center; color: var(--muted);
+      font-family: var(--font-mono); font-size: 16px; letter-spacing: 1px;
     }
   </style>
 </head>
@@ -969,6 +1139,12 @@ const CONFIG = {
       <div class="topbar-center">
         <div class="live-dot">AO VIVO</div>
         <div id="last-update">—</div>
+        <!-- NAV PÁGINAS -->
+        <div id="page-nav">
+          <button class="page-btn active" onclick="switchPage(1,true)">📺 Conteúdo</button>
+          <button class="page-btn" onclick="switchPage(2,true)">📋 Comercial</button>
+          <span id="auto-rotate-icon">⟳ AUTO</span>
+        </div>
       </div>
       <div class="topbar-right">
         <div>
@@ -1159,6 +1335,76 @@ const CONFIG = {
     <div id="ticker-label">INSIGHTS</div>
     <div id="ticker-track">
       <div id="ticker-inner"></div>
+    </div>
+  </div>
+
+  <!-- ── PÁGINA 2 — VISÃO EXECUTIVA ──────────────────────── -->
+  <div id="page2">
+    <!-- HEADER com abas de mês -->
+    <div id="p2-header">
+      <div class="p2-title">PROJETOS COMERCIAIS AUDIOVISUAL</div>
+      <div id="p2-tab-bar"></div>
+      <div id="p2-acesso-aviso" style="display:none; font-size:10px; color:var(--amber); font-family:var(--font-mono); padding: 4px 12px; background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.2); border-radius:4px;">
+        ⚠ Publique a planilha: Arquivo → Compartilhar → Publicar na web
+      </div>
+    </div>
+
+    <!-- KPIs grandes estilo executivo -->
+    <div id="p2-kpis">
+      <div class="p2-kpi" style="--kpi2-color:var(--amber)">
+        <div class="p2-kpi-num" id="p2-kpi-total">—</div>
+        <div class="p2-kpi-label">TOTAL DE ENTREGAS</div>
+        <div class="p2-kpi-sub" id="p2-kpi-total-sub">no período selecionado</div>
+      </div>
+      <div class="p2-kpi" style="--kpi2-color:var(--orange)">
+        <div class="p2-kpi-num" id="p2-kpi-gravacoes">—</div>
+        <div class="p2-kpi-label">GRAVAÇÕES</div>
+        <div class="p2-kpi-sub">BC · Redes</div>
+      </div>
+      <div class="p2-kpi" style="--kpi2-color:var(--green)">
+        <div class="p2-kpi-num" id="p2-kpi-edicoes">—</div>
+        <div class="p2-kpi-label">EDIÇÕES</div>
+        <div class="p2-kpi-sub">BC · Redes</div>
+      </div>
+      <div class="p2-kpi" style="--kpi2-color:var(--blue)">
+        <div class="p2-kpi-num" id="p2-kpi-conteudo">—</div>
+        <div class="p2-kpi-label">PEÇAS GERADAS</div>
+        <div class="p2-kpi-sub">conteúdo entregue</div>
+      </div>
+      <div class="p2-kpi" style="--kpi2-color:var(--purple)">
+        <div class="p2-kpi-num" id="p2-kpi-excecao">—</div>
+        <div class="p2-kpi-label">EXCEÇÕES</div>
+        <div class="p2-kpi-sub" id="p2-kpi-excecao-pct">% fora do padrão</div>
+      </div>
+      <div class="p2-kpi" style="--kpi2-color:var(--text)">
+        <div class="p2-kpi-num" id="p2-kpi-media">—</div>
+        <div class="p2-kpi-label">MÉDIA / SEMANA</div>
+        <div class="p2-kpi-sub">ritmo de produção</div>
+      </div>
+    </div>
+
+    <!-- CORPO: gráfico de barras + tabela -->
+    <div id="p2-content">
+      <!-- COLUNA ESQUERDA: breakdown visual -->
+      <div id="p2-charts">
+        <div class="p2-chart-section">
+          <div class="p2-chart-title">DISTRIBUIÇÃO POR TIPO</div>
+          <div id="p2-chart-tipo"></div>
+        </div>
+        <div class="p2-chart-section">
+          <div class="p2-chart-title">EXECUÇÃO INTERNA × EXTERNA</div>
+          <div id="p2-chart-exec"></div>
+        </div>
+        <div class="p2-chart-section">
+          <div class="p2-chart-title">EXCEÇÕES × PADRÃO</div>
+          <div id="p2-chart-excecao"></div>
+        </div>
+      </div>
+
+      <!-- COLUNA DIREITA: tabela de registros -->
+      <div id="p2-body">
+        <div id="p2-loading">⬡ CARREGANDO PLANILHA...</div>
+      </div>
     </div>
   </div>
 
@@ -1818,9 +2064,13 @@ async function fetchAll() {
   let offset = null;
 
   do {
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), 10000); // 10s timeout por página
     const res = await fetch(url(offset), {
-      headers: { Authorization: `Bearer ${CONFIG.apiKey}` }
+      headers: { Authorization: `Bearer ${CONFIG.apiKey}` },
+      signal: ctrl.signal,
     });
+    clearTimeout(t);
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
       throw new Error(err.error?.message || `HTTP ${res.status}`);
@@ -1834,6 +2084,16 @@ async function fetchAll() {
 }
 
 async function refresh() {
+  // Timeout de segurança: se travar por mais de 15s, esconde o overlay de qualquer jeito
+  const safetyTimer = setTimeout(() => {
+    const ov = $('overlay');
+    if (ov && !ov.classList.contains('hidden')) {
+      ov.classList.add('hidden');
+      const banner = $('config-banner');
+      if (banner) { banner.style.display = 'block'; banner.textContent = '⚠ Timeout ao conectar ao Airtable — verifique a API Key e a conexão de rede.'; }
+    }
+  }, 15000);
+
   try {
     // Carrega nomes dos colaboradores linkados (se cache vazio)
     if (Object.keys(colaboradorCache).length === 0) {
@@ -1891,7 +2151,9 @@ async function refresh() {
     if (!overlay.classList.contains('hidden')) {
       overlay.classList.add('hidden');
     }
+    clearTimeout(safetyTimer);
   } catch (e) {
+    clearTimeout(safetyTimer);
     console.error('Airtable error:', e);
     const banner = $('config-banner');
     banner.style.display = 'block';
@@ -2266,6 +2528,356 @@ setInterval(updateProximoEvento, 1000);
 // Atualiza ticker a cada 15 minutos
 setInterval(renderTicker, 15 * 60 * 1000);
 
+// ═══════════════════════════════════════════════════════════
+// PÁGINA 2 — PROJETOS COMERCIAIS AUDIOVISUAL (Google Sheets)
+// Usa ID interno com gviz — funciona com planilha publicada
+// ═══════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════
+// CONFIGURE AQUI após criar o Apps Script (instruções abaixo)
+// ══════════════════════════════════════════════════════════
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbxG0e6YxzrncAapn_elnrD9KRPJYnASZIxMofLLGQIOyGNTcExw24-MMd3lpyfOMeomnA/exec';
+// Ex: 'https://script.google.com/macros/s/AKfycbXXXXXXX/exec'
+
+const SHEETS_INT_ID = '1Pks5b35xZ8Hz33CaTbkDc1T7ufUR-SloLtUorugZ9kQ';
+const MESES_2026 = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho',
+                    'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro']
+  .map(m => `${m} 2026 Audiovisual`);
+
+let _p2AllRows      = [];   // todos os dados consolidados
+let _p2MesesCarreg  = {};   // { nomeMes: rows[] } — cache por mês
+let _p2FiltroMes    = null; // null = tudo; string = filtra por mês
+let _currentPage    = 1;
+let _autoRotateTimer = null;
+const PAGE_ROTATE_MS = 5 * 60 * 1000;
+
+// ── Alternância automática ──────────────────────────────
+function startAutoRotate() {
+  if (_autoRotateTimer) clearInterval(_autoRotateTimer);
+  _autoRotateTimer = setInterval(() => {
+    switchPage(_currentPage === 1 ? 2 : 1, false);
+  }, PAGE_ROTATE_MS);
+}
+
+function switchPage(n, resetTimer = true) {
+  _currentPage = n;
+  const page2  = document.getElementById('page2');
+  const main   = document.getElementById('main-content');
+  const ticker = document.getElementById('ticker');
+
+  document.querySelectorAll('.page-btn').forEach((b, i) => {
+    b.classList.toggle('active', i === n - 1);
+    if (i === n - 1) { b.style.animation = 'none'; void b.offsetWidth; b.style.animation = ''; }
+  });
+
+  if (n === 2) {
+    main.classList.add('hidden');
+    page2.classList.add('active');
+    ticker.style.display = 'none';
+    if (_p2AllRows.length === 0) carregarTudo();
+    else renderRows(_p2FiltroMes ? _p2MesesCarreg[_p2FiltroMes] || [] : _p2AllRows);
+  } else {
+    main.classList.remove('hidden');
+    page2.classList.remove('active');
+    ticker.style.display = '';
+  }
+  if (resetTimer) startAutoRotate();
+}
+
+// ── URLs de acesso ──────────────────────────────────────
+function gasUrl(sheetName) {
+  return `${GAS_URL}?sheet=${encodeURIComponent(sheetName)}`;
+}
+function gvizUrl(sheetName) {
+  return `https://docs.google.com/spreadsheets/d/${SHEETS_INT_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheetName)}`;
+}
+
+// ── Carrega todos os meses disponíveis em paralelo ──────
+async function carregarTudo() {
+  const bodyEl = document.getElementById('p2-body');
+  if (bodyEl) bodyEl.innerHTML = '<div id="p2-loading">⬡ CARREGANDO TODOS OS MESES...</div>';
+
+  const resultados = await Promise.all(MESES_2026.map(nome => carregarMes(nome)));
+
+  const mesesComDados = [];
+  resultados.forEach((rows, i) => {
+    if (rows && rows.length > 0) {
+      _p2MesesCarreg[MESES_2026[i]] = rows;
+      mesesComDados.push(MESES_2026[i]);
+    }
+  });
+
+  console.log('📋 Meses carregados:', mesesComDados);
+
+  if (mesesComDados.length === 0) {
+    if (bodyEl) bodyEl.innerHTML = `<div id="p2-loading">
+      ⚠ Sem dados. Configure o Apps Script.<br><br>
+      <small style="color:var(--muted);line-height:1.8">
+      1. Abra a planilha → Extensões → Apps Script<br>
+      2. Cole o código do arquivo <b>gas-planilha.js</b><br>
+      3. Implante → Web App → Acesso: Qualquer pessoa<br>
+      4. Cole a URL gerada em <b>GAS_URL</b> no topo deste HTML
+      </small>
+    </div>`;
+    return;
+  }
+
+  _p2AllRows = mesesComDados.flatMap(m => _p2MesesCarreg[m]);
+  _p2FiltroMes = null;
+  buildFiltroBar(mesesComDados);
+  document.getElementById('p2-acesso-aviso').style.display = 'none';
+  renderRows(_p2AllRows);
+}
+
+// ── Carrega um mês: Apps Script → gviz fallback ─────────
+async function carregarMes(nomeMes) {
+  // Prioridade 1: Apps Script (sem CORS, funciona de file://)
+  if (GAS_URL) {
+    try {
+      const url = gasUrl(nomeMes);
+      console.log(`🔗 GAS fetch: ${url}`);
+      const res  = await fetch(url);
+      console.log(`   → status: ${res.status}, type: ${res.type}, redirected: ${res.redirected}`);
+      const text = await res.text();
+      console.log(`   → resposta (primeiros 200 chars): ${text.substring(0,200)}`);
+      const json = JSON.parse(text);
+      if (json.rows && json.rows.length > 0) {
+        console.log(`✅ GAS: ${nomeMes} (${json.rows.length} linhas)`);
+        return json.rows.map(r => ({ mes: nomeMes.replace(' Audiovisual','').replace(' 2026',''), ...r }));
+      }
+      if (json.error) console.warn(`⚠ GAS erro: ${json.error}`);
+    } catch(e) { console.warn(`❌ GAS falhou ${nomeMes}:`, e.message); }
+  }
+
+  // Prioridade 2: gviz direto (funciona se aberto em http://)
+  try {
+    const res  = await fetch(gvizUrl(nomeMes));
+    const text = await res.text();
+    const s = text.indexOf('{'), e = text.lastIndexOf('}');
+    if (s !== -1 && e !== -1) {
+      const json = JSON.parse(text.substring(s, e + 1));
+      if (json.table && json.table.rows && json.table.rows.length > 0) {
+        const rows = parseGvizTable(json.table, nomeMes);
+        if (rows && rows.length > 0) { console.log(`✅ gviz: ${nomeMes} (${rows.length} linhas)`); return rows; }
+      }
+    }
+  } catch(e) { console.warn(`❌ gviz falhou ${nomeMes}:`, e.message); }
+
+  console.warn(`⚠ Nenhum dado obtido para: ${nomeMes}`);
+  return null;
+}
+
+function parseGvizTable(table, nomeMes) {
+  const cols = table.cols.map(c => (c.label || c.id || '').trim());
+  const idx  = re => cols.findIndex(c => re.test(c));
+  const F = { e:idx(/entrega/i), d:idx(/data/i), t:idx(/tarefa/i), tp:idx(/tipo/i), x:idx(/execu/i), c:idx(/conte/i), ex:idx(/exce/i) };
+  console.log(`   colunas: ${cols.join(' | ')}`);
+  const get = (r, i) => i >= 0 ? (r[i] || '') : '';
+  return table.rows
+    .map(row => row.c.map(cell => cell ? (cell.f || (cell.v != null ? String(cell.v) : '')) : ''))
+    .filter(r => F.t >= 0 && r[F.t] && r[F.t].trim())
+    .map(r => ({ mes: nomeMes.replace(' Audiovisual','').replace(' 2026',''), entrega:get(r,F.e), data:get(r,F.d), tarefa:get(r,F.t), tipo:get(r,F.tp), exec:get(r,F.x), conteudo:get(r,F.c), excecao:get(r,F.ex) }));
+}
+
+function parseCsvText(text, nomeMes) {
+  const rows = parseCSV(text);
+  if (rows.length < 2) return null;
+  const headers = rows[0].map(h => h.trim());
+  const idx = re => headers.findIndex(c => re.test(c));
+  const F = { e:idx(/entrega/i), d:idx(/data/i), t:idx(/tarefa/i), tp:idx(/tipo/i), x:idx(/execu/i), c:idx(/conte/i), ex:idx(/exce/i) };
+  console.log(`   colunas: ${headers.join(' | ')}`);
+  const get = (r, i) => i >= 0 ? (r[i] || '') : '';
+  return rows.slice(1)
+    .filter(r => F.t >= 0 && r[F.t] && r[F.t].trim())
+    .map(r => ({ mes: nomeMes.replace(' Audiovisual','').replace(' 2026',''), entrega:get(r,F.e), data:get(r,F.d), tarefa:get(r,F.t), tipo:get(r,F.tp), exec:get(r,F.x), conteudo:get(r,F.c), excecao:get(r,F.ex) }));
+}
+
+function parseCSV(text) {
+  const rows = [];
+  for (const line of text.split(/\r?\n/)) {
+    if (!line.trim()) continue;
+    const cells = []; let cur = '', inQ = false;
+    for (let i = 0; i < line.length; i++) {
+      const c = line[i];
+      if (c==='"') { if (inQ && line[i+1]==='"') { cur+='"'; i++; } else inQ=!inQ; }
+      else if (c===',' && !inQ) { cells.push(cur.trim()); cur=''; }
+      else cur+=c;
+    }
+    cells.push(cur.trim()); rows.push(cells);
+  }
+  return rows;
+}
+
+
+// ── Barra de filtro por mês (substituiu as tabs) ────────
+function buildFiltroBar(mesesDisp) {
+  const bar = document.getElementById('p2-tab-bar');
+  if (!bar) return;
+  bar.innerHTML = '';
+
+  // Botão "Todos os meses"
+  const btnTodos = document.createElement('button');
+  btnTodos.className    = 'p2-tab active';
+  btnTodos.textContent  = `Todos (${mesesDisp.length} meses)`;
+  btnTodos.dataset.mes  = '';
+  btnTodos.onclick = () => filtrarMes(null);
+  bar.appendChild(btnTodos);
+
+  // Um botão por mês disponível
+  mesesDisp.forEach(nome => {
+    const short = nome.replace(' Audiovisual','').replace(' 2026','');
+    const btn   = document.createElement('button');
+    btn.className    = 'p2-tab';
+    btn.textContent  = short;
+    btn.dataset.mes  = nome;
+    btn.onclick      = () => filtrarMes(nome);
+    bar.appendChild(btn);
+  });
+}
+
+function filtrarMes(nomeMes) {
+  _p2FiltroMes = nomeMes;
+  document.querySelectorAll('.p2-tab').forEach(b =>
+    b.classList.toggle('active', b.dataset.mes === (nomeMes || '')));
+  const rows = nomeMes ? (_p2MesesCarreg[nomeMes] || []) : _p2AllRows;
+  renderRows(rows);
+}
+
+// ── Renderiza KPIs + Charts + Tabela ────────────────────
+function renderRows(rows) {
+  const total     = rows.length;
+  const gravacoes = rows.filter(r => /grav/i.test(r.tipo)).length;
+  const edicoes   = rows.filter(r => /edi/i.test(r.tipo)).length;
+  const conteudo  = rows.reduce((s, r) => s + (parseFloat(r.conteudo) || 0), 0);
+
+  // Exceção: base = apenas edições (gravação não tem exceção)
+  const ediRows = rows.filter(r => /edi/i.test(r.tipo));
+  const excecao = ediRows.filter(r => /sim/i.test(r.excecao)).length;
+  const excPct  = ediRows.length > 0 ? Math.round((excecao / ediRows.length) * 100) : 0;
+
+  const mesesAtivos = Object.keys(_p2MesesCarreg).length || 1;
+  const media = Math.round((total / mesesAtivos) * 10) / 10;
+
+  const setKpi = (id, val) => { const e = document.getElementById(id); if (e) e.textContent = val; };
+  setKpi('p2-kpi-total',    total);
+  setKpi('p2-kpi-gravacoes', gravacoes);
+  setKpi('p2-kpi-edicoes',  edicoes);
+  setKpi('p2-kpi-conteudo', conteudo);
+  setKpi('p2-kpi-excecao',  excecao);
+  setKpi('p2-kpi-media',    media);
+
+  const excPctEl = document.getElementById('p2-kpi-excecao-pct');
+  if (excPctEl) {
+    excPctEl.textContent = `${excPct}% das edições`;
+    excPctEl.style.color = excPct > 30 ? 'var(--red)' : excPct > 15 ? 'var(--amber)' : 'var(--muted)';
+  }
+  const subTotal = document.getElementById('p2-kpi-total-sub');
+  if (subTotal) {
+    subTotal.textContent = _p2FiltroMes
+      ? _p2FiltroMes.replace(' Audiovisual','').replace(' 2026','')
+      : `${mesesAtivos} meses de 2026`;
+  }
+
+  renderCharts(rows, { total, ediRows, excecao });
+
+  const tipoClass = t => {
+    const tl = (t||'').toLowerCase();
+    if (/gravação bc|gravacao bc/.test(tl)) return 'tipo-gravacao-bc';
+    if (/edição bc|edicao bc/.test(tl))     return 'tipo-edicao-bc';
+    if (/edição redes|edicao redes/.test(tl))return 'tipo-edicao-redes';
+    if (/gravação|gravacao/.test(tl))        return 'tipo-gravacao-redes';
+    if (/edição|edicao/.test(tl))            return 'tipo-edicao-redes';
+    return 'tipo-outro';
+  };
+
+  // Ordena por data DESC (mais recente primeiro)
+  const parseData = d => {
+    if (!d) return 0;
+    // Formatos: dd/MM/yyyy ou yyyy-MM-dd
+    const p = d.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+    if (p) return new Date(p[3], p[2]-1, p[1]).getTime();
+    const q = d.match(/(\d{4})-(\d{2})-(\d{2})/);
+    if (q) return new Date(q[1], q[2]-1, q[3]).getTime();
+    return 0;
+  };
+  const rowsSorted = [...rows].sort((a, b) => parseData(b.data) - parseData(a.data));
+
+  let html = `<table id="p2-table">
+    <thead><tr>
+      <th>MÊS</th><th>#</th><th>DATA</th><th>TAREFA</th><th>TIPO</th>
+      <th>EXECUÇÃO</th><th style="text-align:center">PEÇAS</th><th style="text-align:center">EXCEÇÃO</th>
+    </tr></thead><tbody>`;
+
+  rowsSorted.forEach(r => {
+    const isEdicao = /edi/i.test(r.tipo);
+    const excSim   = /sim/i.test(r.excecao);
+    const excCell  = isEdicao
+      ? (excSim ? '<span class="excecao-sim">SIM</span>' : '<span style="color:var(--muted);font-size:11px">não</span>')
+      : '<span style="color:var(--border);font-size:11px">—</span>';
+    html += `<tr>
+      <td style="font-size:12px;color:var(--muted);white-space:nowrap">${r.mes}</td>
+      <td style="color:var(--muted);font-family:var(--font-mono);font-size:12px">${r.entrega}</td>
+      <td style="font-family:var(--font-mono);font-size:12px;white-space:nowrap">${r.data}</td>
+      <td style="font-weight:600;max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.tarefa}</td>
+      <td><span class="tipo-chip ${tipoClass(r.tipo)}">${r.tipo}</span></td>
+      <td style="font-size:13px;color:var(--text)">${r.exec}</td>
+      <td style="text-align:center;font-family:var(--font-mono);font-size:13px;color:var(--blue)">${r.conteudo}</td>
+      <td style="text-align:center">${excCell}</td>
+    </tr>`;
+  });
+  html += '</tbody></table>';
+  document.getElementById('p2-body').innerHTML = html;
+}
+
+function renderCharts(rows, { total, ediRows, excecao }) {
+  // ── TIPO: todos os valores sem agrupamento ──
+  const tipoMap = {};
+  rows.forEach(r => { const t = (r.tipo||'—').trim(); tipoMap[t] = (tipoMap[t]||0)+1; });
+  const tipoSorted = Object.entries(tipoMap).sort((a,b) => b[1]-a[1]);
+  const tipoColors = ['var(--orange)','var(--green)','var(--blue)','var(--amber)','var(--purple)','var(--red)','var(--muted)'];
+  const maxTipo = tipoSorted[0] ? tipoSorted[0][1] : 1;
+  const el1 = document.getElementById('p2-chart-tipo');
+  if (el1) el1.innerHTML = tipoSorted.map(([label, count], i) =>
+    `<div class="bar-row">
+      <div class="bar-label" title="${label}">${label}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${Math.round(count/maxTipo*100)}%;background:${tipoColors[i%tipoColors.length]}"></div></div>
+      <div class="bar-count">${count}</div>
+    </div>`).join('') || '<div style="color:var(--muted);font-size:11px">sem dados</div>';
+
+  // ── EXECUÇÃO: todos os valores sem agrupamento ──
+  const execMap = {};
+  rows.forEach(r => { const x = (r.exec||'—').trim(); execMap[x] = (execMap[x]||0)+1; });
+  const execSorted = Object.entries(execMap).sort((a,b) => b[1]-a[1]);
+  const execColors = ['var(--blue)','var(--purple)','var(--amber)','var(--green)','var(--red)','var(--muted)'];
+  const maxExec = execSorted[0] ? execSorted[0][1] : 1;
+  const el2 = document.getElementById('p2-chart-exec');
+  if (el2) el2.innerHTML = execSorted.map(([label, count], i) =>
+    `<div class="bar-row">
+      <div class="bar-label" title="${label}">${label}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${Math.round(count/maxExec*100)}%;background:${execColors[i%execColors.length]}"></div></div>
+      <div class="bar-count">${count}</div>
+    </div>`).join('') || '<div style="color:var(--muted);font-size:11px">sem dados</div>';
+
+  // ── EXCEÇÃO: base = só edições ──
+  const totalEdi = ediRows ? ediRows.length : rows.filter(r => /edi/i.test(r.tipo)).length;
+  const padrao   = totalEdi - excecao;
+  const excPct   = totalEdi > 0 ? Math.round((excecao / totalEdi) * 100) : 0;
+  const excColor = excPct > 30 ? 'var(--red)' : excPct > 15 ? 'var(--amber)' : 'var(--green)';
+  const el3 = document.getElementById('p2-chart-excecao');
+  if (el3) el3.innerHTML = totalEdi > 0 ? `
+    <div style="font-size:11px;color:var(--muted);margin-bottom:8px">base: ${totalEdi} edições</div>
+    <div class="bar-row">
+      <div class="bar-label">Sem exceção</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${Math.round(padrao/totalEdi*100)}%;background:var(--green)"></div></div>
+      <div class="bar-count">${padrao}</div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label">Com exceção</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${excPct}%;background:${excColor}"></div></div>
+      <div class="bar-count">${excecao}</div>
+    </div>
+    <div style="margin-top:8px;font-size:13px;color:${excColor};font-weight:700">${excPct}% das edições tiveram exceção</div>
+  ` : '<div style="color:var(--muted);font-size:11px">sem edições no período</div>';
+}
 
 let timeLeft = CONFIG.refreshMs / 1000;
 const circumference = 2 * Math.PI * 15.9;
@@ -2302,6 +2914,7 @@ if (!CONFIG.apiKey.startsWith('pat') && !CONFIG.apiKey.startsWith('key')) {
 } else {
   refresh();
   initModoFoco();
+  startAutoRotate(); // alterna entre páginas a cada 5 min
 }
 
 // Título dinâmico da aba
