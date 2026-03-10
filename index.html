@@ -1706,9 +1706,9 @@ const CONFIG = {
     </div>
     <!-- Ticker de novidades das últimas 24h -->
     <div id="p3-news-bar">
-      <div id="p3-news-label">🔔 ATUALIZAÇÕES 24H · DESTAQUES</div>
+      <div id="p3-news-label">🏟️ DESTAQUES · AMANHÃ</div>
       <div id="p3-news-track-wrap">
-        <div id="p3-news-track">Carregando atualizações...</div>
+        <div id="p3-news-track">Aguardando dados da agenda...</div>
       </div>
     </div>
   </div>
@@ -2481,63 +2481,36 @@ function buildNewsTicker(records, agendaEvents) {
   const track = document.getElementById('p3-news-track');
   if (!track) return;
 
-  const f = CONFIG.f;
+  const cache = (agendaEvents && agendaEvents.length > 0) ? agendaEvents : _agendaEventsCache;
   const items = [];
 
-  // ── 1. Atualizações de grade das últimas 24h ──
-  if (records && records.length > 0) {
-    items.push(`<span class="news-item"><span style="color:#818cf8;font-weight:900;letter-spacing:2px">📋 GRADE · ÚLTIMAS 24H</span></span>`);
-    records.forEach(rec => {
-      const tarefa = rec.fields[f.tarefa] || rec.fields['Tarefa'] || rec.fields['Nome'] || rec.fields['Name'] || '?';
-      const statusRaw = fieldText(rec.fields[f.status]) || '';
-      const info = STATUS_MAP[statusRaw];
-      const statusLabel = info ? info.label : statusRaw;
-      const statusEmoji = info ? info.icon : '•';
-      const entrega = rec.fields[f.entrega] || rec.fields['Responsável'] || '';
-      const editor = Array.isArray(entrega)
-        ? entrega.map(v => typeof v === 'object' ? (v.name || '') : String(v)).filter(Boolean).join(', ')
-        : String(entrega || '');
-      const mod = rec.fields['Last Modified'] || rec.fields['Última Modificação'] || '';
-      let horaStr = '';
-      if (mod) {
-        const d = new Date(mod);
-        horaStr = d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' });
-      }
-      items.push(
-        `<span class="news-item">`
-        + `${statusEmoji} `
-        + `<span class="news-status">[${statusLabel}]</span> `
-        + `<span class="news-name">${tarefa}</span>`
-        + (editor ? ` — <span style="color:#94a3b8">${editor}</span>` : '')
-        + (horaStr ? `<span class="news-time">${horaStr}</span>` : '')
-        + `</span>`
-      );
-    });
-    items.push(`<span class="news-item"><span style="color:rgba(255,255,255,0.15)">——————</span></span>`);
-  }
-
-  // ── 2. Mega Destaques: Brasileirão Estúdio 1/2 nas próximas 120h ──
-  const agora = new Date();
+  // ── 1. MEGA DESTAQUES: Brasileirão Estúdio 1/2 nas próximas 120h ──
+  const agora  = new Date();
   const fim120 = new Date(agora.getTime() + 120 * 60 * 60 * 1000);
-  const brasileiraoEvents = (agendaEvents || _agendaEventsCache).filter(ev => {
-    const nome = (ev.fields['Match ID'] || ev.fields['Nome'] || ev.fields['Name'] || ev.fields['Evento'] || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+  const megaEvs = cache.filter(ev => {
+    const nome = (ev.fields['Match ID'] || ev.fields['Nome'] || ev.fields['Name'] || ev.fields['Evento'] || '')
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
     if (!nome.includes('brasileir')) return false;
-    const padrao = fieldText(ev.fields['Padrão de Produção'] || ev.fields['Padrao de Producao'] || ev.fields['Padrão'] || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    const padrao = fieldText(ev.fields['Padrão de Produção'] || ev.fields['Padrao de Producao'] || ev.fields['Padrão'] || '')
+      .toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
     if (!/estudio\s*[12](?!\s*\(swb\))/i.test(padrao)) return false;
-    // Janela: próximas 120h
     const inicio = ev.fields['Inicio do Evento BRT'] || ev.fields['Início do Evento BRT'] || '';
     if (!inicio) return false;
     const d = new Date(inicio);
     return d >= agora && d <= fim120;
   });
 
-  if (brasileiraoEvents.length > 0) {
+  if (megaEvs.length > 0) {
     items.push(`<span class="news-item"><span style="color:#fbbf24;font-weight:900;letter-spacing:2px">🏟️ MEGA DESTAQUE · PRÓX. 120H</span></span>`);
-    brasileiraoEvents.forEach(ev => {
-      const f2 = ev.fields;
+    megaEvs.forEach(ev => {
+      const f2     = ev.fields;
       const nome   = f2['Match ID'] || f2['Nome'] || f2['Name'] || f2['Evento'] || '—';
       const inicio = f2['Inicio do Evento BRT'] || f2['Início do Evento BRT'] || '';
       const padrao = fieldText(f2['Padrão de Produção'] || f2['Padrao de Producao'] || f2['Padrão'] || '');
+      const avRaw  = f2['Audiovisual'] || f2['Áudiovisual'] || f2['Áudio Visual'] || '';
+      const av     = Array.isArray(avRaw)
+        ? avRaw.map(v => typeof v === 'object' ? (v.name || v.title || '') : String(v)).filter(Boolean).join(', ')
+        : String(avRaw || '');
       let horaStr = '', dataStr = '';
       if (inicio) {
         const d = new Date(inicio);
@@ -2549,27 +2522,65 @@ function buildNewsTicker(records, agendaEvents) {
         + `🏆 <span style="color:#fbbf24;font-weight:900">BRASILEIRÃO</span> `
         + `<span style="color:#fde68a;font-weight:700">${nome}</span>`
         + (padrao ? ` <span style="color:#f59e0b;font-size:10px">[${padrao}]</span>` : '')
-        + (dataStr ? ` <span style="color:#f59e0b">${dataStr}</span>` : '')
-        + (horaStr ? ` <span style="color:#fbbf24;font-weight:700">${horaStr}</span>` : '')
+        + (dataStr ? ` <span style="color:#f59e0b"> ${dataStr}</span>` : '')
+        + (horaStr ? ` <span style="color:#fbbf24;font-weight:700"> ${horaStr}</span>` : '')
+        + (av      ? ` <span style="color:#94a3b8">— ${av}</span>` : '')
+        + `</span>`
+      );
+    });
+    items.push(`<span class="news-item"><span style="color:rgba(255,255,255,0.15)">——————</span></span>`);
+  }
+
+  // ── 2. ESCALA DE AMANHÃ: todos os eventos do dia seguinte com editor alocado ──
+  const brtNow     = new Date(agora.getTime() - 3 * 3600000);
+  const amanha     = new Date(brtNow);
+  amanha.setDate(amanha.getDate() + 1);
+  const amanhaStr  = amanha.toISOString().split('T')[0];
+  const diaNome    = amanha.toLocaleDateString('pt-BR', { weekday: 'long' }).toUpperCase().split('-')[0].trim();
+
+  const amanhaEvs = cache.filter(ev => {
+    const inicio = ev.fields['Inicio do Evento BRT'] || ev.fields['Início do Evento BRT'] || '';
+    if (!inicio) return false;
+    const dBRT = new Date(new Date(inicio).getTime() - 3 * 3600000);
+    return dBRT.toISOString().split('T')[0] === amanhaStr;
+  });
+
+  if (amanhaEvs.length > 0) {
+    items.push(`<span class="news-item"><span style="color:#38bdf8;font-weight:900;letter-spacing:2px">📅 ESCALA DE ${diaNome}</span></span>`);
+    amanhaEvs.forEach(ev => {
+      const f2     = ev.fields;
+      const nome   = f2['Match ID'] || f2['Nome'] || f2['Name'] || f2['Evento'] || '—';
+      const inicio = f2['Inicio do Evento BRT'] || f2['Início do Evento BRT'] || '';
+      const avRaw  = f2['Audiovisual'] || f2['Áudiovisual'] || f2['Áudio Visual'] || '';
+      const av     = Array.isArray(avRaw)
+        ? avRaw.map(v => typeof v === 'object' ? (v.name || v.title || '') : String(v)).filter(Boolean).join(', ')
+        : String(avRaw || '');
+      let horaStr = '';
+      if (inicio) {
+        const d = new Date(inicio);
+        horaStr = d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' });
+      }
+      items.push(
+        `<span class="news-item">`
+        + `<span style="color:#38bdf8;font-weight:700">${horaStr || '—'}</span> `
+        + `<span style="color:#e2e8f0;font-weight:600">${nome}</span>`
+        + (av ? ` <span style="color:#94a3b8">— ${av}</span>` : '')
         + `</span>`
       );
     });
   }
 
-  if (items.length === 0) {
-    track.innerHTML = '<span class="news-item"><span class="news-status">Sem atualizações nas últimas 24h · Nenhum mega destaque nas próximas 120h</span></span>';
-    return;
-  }
+  // Sempre sobrescreve o DOM — nunca fica travado
+  track.innerHTML = items.length > 0
+    ? items.join(' &nbsp;·&nbsp; ')
+    : '<span style="color:var(--muted)">Nenhum mega destaque nas próximas 120h · Sem eventos amanhã</span>';
 
-  track.innerHTML = items.join(' &nbsp;&nbsp;·&nbsp;&nbsp; ');
-  const chars = track.textContent.length;
-  const duration = Math.max(40, Math.min(150, chars * 0.09));
+  const duration = Math.max(40, Math.min(180, track.textContent.length * 0.1));
   track.style.animationDuration = duration + 's';
 }
 
 async function refreshNewsTicker() {
-  const records = await fetchUltimas24h();
-  buildNewsTicker(records, _agendaEventsCache);
+  buildNewsTicker([], _agendaEventsCache);
 }
 
 function buildKanban(records) {
@@ -2802,18 +2813,21 @@ async function refresh() {
       try {
         const agendaEvents = await fetchAgenda15Dias();
         buildAgenda(agendaEvents);
+        _agendaEventsCache = agendaEvents;
       } catch(e) {
         console.warn('Erro ao carregar agenda:', e.message);
         const pb = $('p3-body');
         if (pb) pb.innerHTML = '<div id="p3-empty">Erro ao carregar agenda</div>';
       }
 
+      // Ticker: sempre executa com o cache disponível (mesmo que agenda falhe)
+      buildNewsTicker([], _agendaEventsCache);
+
       // Ticker de últimas 24h (passa cache da agenda para destacar Brasileirão)
       try {
         const records24h = await fetchUltimas24h();
-        buildNewsTicker(records24h, agendaEvents);
-        _agendaEventsCache = agendaEvents; // salva cache
-      } catch(e) { console.warn('Ticker 24h erro:', e); }
+        buildNewsTicker(records24h, _agendaEventsCache);
+      } catch(e) { console.warn('Ticker erro:', e); }
     } catch(e) {
       console.warn('Erro ao carregar escala:', e.message);
       $('escala-list').innerHTML = '<div class="escala-empty">Erro ao carregar escala</div>';
