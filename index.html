@@ -929,6 +929,281 @@
     #page2.active { display: flex; }
     #main-content.hidden { display: none; }
 
+    /* ── PÁGINA 3 — AGENDA 15 DIAS ── */
+    #page3 {
+      display: none; flex-direction: column; overflow: hidden;
+      grid-column: 1 / -1; grid-row: 1; background: var(--bg);
+      position: relative; z-index: 10;
+    }
+    #page3.active { display: flex; }
+
+    /* Esconde painel lateral quando page3 ativa */
+    #app.p3-active #left-panel { display: none; }
+
+    #p3-header {
+      padding: 14px 28px 12px;
+      display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+      border-bottom: 1px solid var(--border); background: var(--bg2); flex-shrink: 0;
+    }
+    .p3-title {
+      font-family: var(--font-display); font-size: 28px;
+      letter-spacing: 5px; color: var(--muted); flex-shrink: 0;
+    }
+    #p3-subtitle {
+      font-size: 12px; font-family: var(--font-mono); color: var(--muted);
+    }
+    #p3-count-badge {
+      font-size: 12px; font-family: var(--font-mono);
+      color: var(--blue); background: rgba(56,189,248,0.08);
+      border: 1px solid rgba(56,189,248,0.2); padding: 4px 14px; border-radius: 10px;
+    }
+
+    /* ── FAIXA FIXA DE JOGOS CHAVE ── */
+    #p3-pinned {
+      flex-shrink: 0;
+      height: 62px;
+      background: linear-gradient(90deg, rgba(245,158,11,0.13) 0%, rgba(245,158,11,0.03) 100%);
+      border-bottom: 2px solid rgba(245,158,11,0.35);
+      padding: 0 24px;
+      display: flex; align-items: center; gap: 0;
+      overflow: hidden;
+    }
+    #p3-pinned-label {
+      font-size: 8px; letter-spacing: 2.5px; font-weight: 800;
+      color: var(--amber); font-family: var(--font-ui);
+      white-space: nowrap; flex-shrink: 0;
+      writing-mode: horizontal-tb;
+      border-right: 1px solid rgba(245,158,11,0.3);
+      padding-right: 16px; margin-right: 16px;
+      line-height: 1.5;
+    }
+    #p3-pinned-cards {
+      display: flex; flex-direction: row; align-items: center;
+      gap: 10px; flex: 1;
+      overflow-x: auto; overflow-y: hidden;
+      height: 100%;
+      padding: 10px 0;
+    }
+    #p3-pinned-cards::-webkit-scrollbar { height: 3px; }
+    #p3-pinned-cards::-webkit-scrollbar-thumb { background: rgba(245,158,11,0.3); }
+    .p3-pinned-card {
+      flex-shrink: 0;
+      display: flex; align-items: center; gap: 10px;
+      background: rgba(245,158,11,0.1);
+      border: 1px solid rgba(245,158,11,0.35);
+      border-radius: 6px; padding: 7px 16px;
+      height: 42px;
+      transition: background 0.15s;
+    }
+    .p3-pinned-card:hover { background: rgba(245,158,11,0.18); }
+    .p3-pinned-icon { font-size: 18px; flex-shrink: 0; line-height: 1; }
+    .p3-pinned-info { min-width: 0; }
+    .p3-pinned-name {
+      font-size: 13px; font-weight: 800; color: #fde68a;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      line-height: 1.2; max-width: 280px;
+    }
+    .p3-pinned-meta {
+      display: flex; align-items: center; gap: 8px; margin-top: 2px;
+    }
+    .p3-pinned-date {
+      font-family: var(--font-mono); font-size: 10px; color: var(--amber); font-weight: 700;
+    }
+    .p3-pinned-hora {
+      font-family: var(--font-mono); font-size: 10px; color: var(--muted);
+    }
+    #p3-pinned-empty {
+      font-size: 11px; font-family: var(--font-mono); color: var(--muted);
+    }
+
+    #p3-body {
+      flex: 1; overflow-x: auto; overflow-y: auto; padding: 20px 28px;
+      display: flex; flex-wrap: nowrap; gap: 20px; align-items: flex-start;
+    }
+    #p3-body::-webkit-scrollbar { height: 4px; width: 4px; }
+    #p3-body::-webkit-scrollbar-thumb { background: var(--border); }
+
+    .agenda-day-col {
+      flex: 0 0 auto;
+      width: 290px;
+      display: flex; flex-direction: column; gap: 10px;
+      max-height: 100%;
+      overflow-y: auto;
+    }
+    .agenda-day-col::-webkit-scrollbar { width: 2px; }
+    .agenda-day-col::-webkit-scrollbar-thumb { background: var(--border); }
+    .agenda-day-header {
+      display: flex; align-items: baseline; gap: 8px;
+      padding: 8px 12px;
+      background: rgba(255,255,255,0.04);
+      border-left: 3px solid var(--amber);
+      border-radius: 3px;
+      flex-shrink: 0;
+    }
+    .agenda-day-name {
+      font-family: var(--font-display); font-size: 24px;
+      letter-spacing: 2px; color: var(--amber);
+    }
+    .agenda-day-date {
+      font-family: var(--font-mono); font-size: 12px;
+      color: var(--muted);
+    }
+    .agenda-day-count {
+      margin-left: auto; font-family: var(--font-mono);
+      font-size: 11px; color: var(--muted);
+      background: rgba(255,255,255,0.05);
+      padding: 2px 8px; border-radius: 8px;
+    }
+
+    .agenda-card {
+      padding: 10px 13px;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--muted);
+      border-radius: 5px;
+      transition: background 0.15s;
+      animation: fadeIn 0.3s ease;
+    }
+    .agenda-card:hover { background: var(--bg3); }
+
+    .agenda-card.agenda-highlight {
+      border-left-color: var(--amber);
+      background: rgba(245,158,11,0.07);
+      box-shadow: 0 0 14px rgba(245,158,11,0.12);
+    }
+    .agenda-card.agenda-highlight .agenda-card-name {
+      color: #fde68a;
+    }
+    .agenda-card-time {
+      font-family: var(--font-mono); font-size: 12px;
+      font-weight: 700; color: var(--blue);
+      margin-bottom: 4px;
+    }
+    .agenda-card-name {
+      font-size: 14px; font-weight: 700;
+      color: var(--text); line-height: 1.35;
+      margin-bottom: 5px;
+    }
+    .agenda-card-av {
+      font-size: 10px; color: var(--muted);
+    }
+    .agenda-card-av span {
+      display: inline-block;
+      background: rgba(167,139,250,0.1); color: #c4b5fd;
+      border: 1px solid rgba(167,139,250,0.18);
+      padding: 1px 6px; border-radius: 2px;
+      font-size: 10px; margin-right: 3px;
+    }
+    .agenda-highlight-badge {
+      display: inline-block;
+      background: rgba(245,158,11,0.18); color: var(--amber);
+      border: 1px solid rgba(245,158,11,0.3);
+      font-size: 9px; font-weight: 800; letter-spacing: 1px;
+      padding: 2px 7px; border-radius: 2px;
+      margin-bottom: 5px;
+    }
+    #p3-empty {
+      padding: 40px; font-family: var(--font-mono);
+      font-size: 12px; color: var(--muted); letter-spacing: 1px;
+    }
+
+    /* ── DESTAQUE SUPREMO: Brasileirão Estúdio 1/2 ── */
+    .agenda-card.agenda-supremo {
+      background: linear-gradient(135deg, #1a0f00 0%, #2d1a00 60%, #1a0f00 100%);
+      border: 2px solid #f59e0b;
+      border-left: 5px solid #fbbf24;
+      border-radius: 5px;
+      padding: 12px 14px;
+      box-shadow: 0 0 24px rgba(245,158,11,0.35);
+      position: relative;
+    }
+    .agenda-card.agenda-supremo::after {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, transparent, #fbbf24, transparent);
+      animation: shimmer-top 2s ease-in-out infinite;
+      pointer-events: none;
+    }
+    @keyframes shimmer-top {
+      0%,100% { opacity: 0.4; } 50% { opacity: 1; }
+    }
+    .agenda-card.agenda-supremo .agenda-card-time {
+      font-family: var(--font-mono);
+      font-size: 22px; font-weight: 700;
+      color: #fbbf24; line-height: 1.1; margin-bottom: 6px;
+    }
+    .agenda-card.agenda-supremo .agenda-card-name {
+      font-size: 15px; font-weight: 900;
+      color: #fde68a; line-height: 1.4;
+      margin-bottom: 6px; white-space: normal; word-break: break-word;
+      text-shadow: 0 0 10px rgba(251,191,36,0.4);
+    }
+    .agenda-card.agenda-supremo .agenda-card-av { font-size: 10px; margin-top: 4px; }
+    .agenda-supremo-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      background: rgba(245,158,11,0.22);
+      border: 1px solid rgba(245,158,11,0.55);
+      color: #fbbf24; font-size: 9px; font-weight: 900;
+      letter-spacing: 1.5px; padding: 3px 9px; border-radius: 2px;
+      margin-bottom: 8px; text-transform: uppercase;
+      animation: pulse-badge 1.5s ease-in-out infinite;
+    }
+    @keyframes pulse-badge {
+      0%,100% { box-shadow: 0 0 0 0 rgba(245,158,11,0.3); }
+      50%      { box-shadow: 0 0 0 4px rgba(245,158,11,0); }
+    }
+
+    /* ── Nav no header da página 3 ── */
+    #p3-nav {
+      display: flex; gap: 8px; margin-left: auto;
+    }
+    .p3-nav-btn {
+      background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.6);
+      border: 1px solid rgba(255,255,255,0.12); border-radius: 6px;
+      padding: 6px 14px; font-size: 12px; font-weight: 600;
+      font-family: var(--font-mono); cursor: pointer; letter-spacing: 0.5px;
+      transition: all 0.2s;
+    }
+    .p3-nav-btn:hover { background: rgba(255,255,255,0.12); color: #fff; }
+    .p3-nav-btn.p3-nav-active {
+      background: rgba(245,158,11,0.2); color: #f59e0b;
+      border-color: rgba(245,158,11,0.5);
+    }
+
+    /* ── Ticker de Últimas 24h ── */
+    #p3-news-bar {
+      flex-shrink: 0; height: 38px;
+      display: flex; align-items: center;
+      background: rgba(15,15,25,0.95);
+      border-top: 1px solid rgba(99,102,241,0.3);
+    }
+    #p3-news-label {
+      flex-shrink: 0; padding: 0 14px;
+      font-family: var(--font-mono); font-size: 10px; font-weight: 800;
+      letter-spacing: 1.5px; color: #818cf8;
+      border-right: 1px solid rgba(99,102,241,0.3);
+      white-space: nowrap; height: 100%; display: flex; align-items: center;
+    }
+    #p3-news-track-wrap {
+      flex: 1; overflow: hidden; height: 100%;
+      display: flex; align-items: center;
+    }
+    #p3-news-track {
+      display: inline-block; white-space: nowrap;
+      font-family: var(--font-mono); font-size: 12px; color: rgba(255,255,255,0.75);
+      animation: scroll-news 60s linear infinite;
+      padding-left: 100%;
+    }
+    #p3-news-track:hover { animation-play-state: paused; }
+    @keyframes scroll-news {
+      0%   { transform: translateX(0); }
+      100% { transform: translateX(-100%); }
+    }
+    .news-item { margin-right: 60px; }
+    .news-item .news-status { color: #818cf8; font-weight: 700; }
+    .news-item .news-name   { color: rgba(255,255,255,0.85); }
+    .news-item .news-time   { color: rgba(255,255,255,0.4); margin-left: 8px; }
+
     #p2-header {
       padding: 12px 24px 10px;
       display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
@@ -1143,6 +1418,7 @@ const CONFIG = {
         <div id="page-nav">
           <button class="page-btn active" onclick="switchPage(1,true)">📺 Conteúdo</button>
           <button class="page-btn" onclick="switchPage(2,true)">📋 Comercial</button>
+          <button class="page-btn" onclick="switchPage(3,true)">📅 Agenda 15d</button>
           <span id="auto-rotate-icon">⟳ AUTO</span>
         </div>
       </div>
@@ -1404,6 +1680,35 @@ const CONFIG = {
       <!-- COLUNA DIREITA: tabela de registros -->
       <div id="p2-body">
         <div id="p2-loading">⬡ CARREGANDO PLANILHA...</div>
+      </div>
+    </div>
+  </div><!-- fim #page2 -->
+
+  <!-- ── PÁGINA 3 — AGENDA DOS PRÓXIMOS 15 DIAS ── -->
+  <div id="page3">
+    <div id="p3-header">
+      <div class="p3-title">AGENDA DOS PRÓXIMOS 15 DIAS</div>
+      <div id="p3-subtitle">Escala de Eventos · Tabela Escala</div>
+      <div id="p3-count-badge">0 eventos</div>
+      <div id="p3-nav">
+        <button class="p3-nav-btn" onclick="switchPage(1,true)">📺 Conteúdo</button>
+        <button class="p3-nav-btn" onclick="switchPage(2,true)">📋 Comercial</button>
+        <button class="p3-nav-btn p3-nav-active" onclick="switchPage(3,true)">📅 Agenda 15d</button>
+      </div>
+    </div>
+    <!-- Faixa fixa: Brasileirão · Copa do Mundo · Finalíssima -->
+    <div id="p3-pinned">
+      <div id="p3-pinned-label">⚽ CALENDÁRIO CHAVE</div>
+      <div id="p3-pinned-cards"><div id="p3-pinned-empty">Carregando...</div></div>
+    </div>
+    <div id="p3-body">
+      <div id="p3-empty">⬡ CARREGANDO AGENDA...</div>
+    </div>
+    <!-- Ticker de novidades das últimas 24h -->
+    <div id="p3-news-bar">
+      <div id="p3-news-label">🔔 ATUALIZAÇÕES 24H · DESTAQUES</div>
+      <div id="p3-news-track-wrap">
+        <div id="p3-news-track">Carregando atualizações...</div>
       </div>
     </div>
   </div>
@@ -1903,6 +2208,369 @@ function buildEscala(events) {
   });
 }
 
+// ── AGENDA 15 DIAS ──────────────────────────────────────────────────────────
+// Eventos de ALTO VALOR que devem ser destacados (busca parcial, case-insensitive)
+const AGENDA_HIGHLIGHT_KEYS = [
+  'brasileirão', 'brasileirao',
+  'europa league',
+  'conference league',
+  'respecagem da copa',
+  'finalíssima', 'finalissima',
+  'paulistão', 'paulistao',
+  'copa do mundo',
+  'roda de bobo',
+  'copazona',
+  'kings league',
+  'wtt',
+  'tênis', 'tenis',
+  'um dia com',
+  'destrincha',  // inclui "Destrincha Donan"
+];
+
+// Palavras-chave para EXCLUIR (exceto "Destrincha Donan" que deve ser incluído)
+const AGENDA_EXCLUDE_KEYS = [
+  'compacto',
+  'externa',
+  'magazine',
+  'piloto',
+];
+
+function agendaDeveExcluir(nome) {
+  const nl = (nome || '').toLowerCase();
+  // Gravação → excluir, EXCETO "Destrincha Donan"
+  if (/grava[çc][aã]o/i.test(nl)) {
+    if (/destrincha donan/i.test(nl)) return false; // exceção permitida
+    return true;
+  }
+  for (const key of AGENDA_EXCLUDE_KEYS) {
+    if (nl.includes(key)) return true;
+  }
+  return false;
+}
+
+function agendaEhDestaque(nome) {
+  const nl = (nome || '').toLowerCase();
+  for (const key of AGENDA_HIGHLIGHT_KEYS) {
+    if (nl.includes(key)) return true;
+  }
+  return false;
+}
+
+async function fetchAgenda15Dias() {
+  const tableId = 'tblCiPmrBUZDpMxCr';
+
+  // Janela: de hoje BRT até hoje+15 dias (inclusive)
+  const now    = new Date();
+  const brtNow = new Date(now.getTime() - 3 * 3600000);
+  const hojeStr = brtNow.toISOString().split('T')[0];
+  const fim = new Date(brtNow);
+  fim.setDate(fim.getDate() + 15);
+  const fimStr = fim.toISOString().split('T')[0];
+
+  let all = [], offset = null;
+  do {
+    const params = new URLSearchParams({ pageSize: 100 });
+    if (offset) params.set('offset', offset);
+    const res = await fetch(
+      `https://api.airtable.com/v0/${CONFIG.baseId}/${tableId}?${params}`,
+      { headers: { Authorization: `Bearer ${CONFIG.apiKey}` } }
+    );
+    if (!res.ok) { console.warn('Agenda fetch error', res.status); break; }
+    const data = await res.json();
+    all = all.concat(data.records || []);
+    offset = data.offset;
+  } while (offset);
+
+  // Filtra por janela de datas + regras de exclusão
+  const eventos = all.filter(ev => {
+    const inicio = ev.fields['Inicio do Evento BRT'] || ev.fields['Início do Evento BRT'] || '';
+    if (!inicio) return false;
+    const d = new Date(inicio);
+    const dBRT = new Date(d.getTime() - 3 * 3600000);
+    const dStr = dBRT.toISOString().split('T')[0];
+    if (dStr < hojeStr || dStr > fimStr) return false;
+    const nome = ev.fields['Match ID'] || ev.fields['Nome'] || ev.fields['Name'] || ev.fields['Evento'] || '';
+    if (agendaDeveExcluir(nome)) return false;
+    return true;
+  });
+
+  // Ordena por data/hora crescente
+  eventos.sort((a, b) => {
+    const ta = a.fields['Inicio do Evento BRT'] || a.fields['Início do Evento BRT'] || '';
+    const tb = b.fields['Inicio do Evento BRT'] || b.fields['Início do Evento BRT'] || '';
+    return ta < tb ? -1 : ta > tb ? 1 : 0;
+  });
+
+  console.log(`📅 Agenda 15d: ${all.length} total → ${eventos.length} filtrados [${hojeStr} → ${fimStr}]`);
+  return eventos;
+}
+
+function buildAgenda(events) {
+  const body  = $('p3-body');
+  const badge = $('p3-count-badge');
+  const pinnedCards = $('p3-pinned-cards');
+  if (!body) return;
+
+  badge.textContent = events.length + ' eventos';
+
+  // ── Faixa fixa: apenas Brasileirão, Copa do Mundo, Finalíssima ──
+  const PINNED_KEYS = ['brasileirão', 'brasileirao', 'copa do mundo', 'finalíssima', 'finalissima'];
+  const PINNED_ICONS = { 'brasileirão': '🏆', 'brasileirao': '🏆', 'copa do mundo': '🌍', 'finalíssima': '⚽', 'finalissima': '⚽' };
+
+  const pinnedEvents = events.filter(ev => {
+    const n = (ev.fields['Match ID'] || ev.fields['Nome'] || ev.fields['Name'] || ev.fields['Evento'] || '').toLowerCase();
+    return PINNED_KEYS.some(k => n.includes(k));
+  });
+
+  if (pinnedCards) {
+    if (pinnedEvents.length === 0) {
+      pinnedCards.innerHTML = '<div id="p3-pinned-empty">Nenhum jogo de destaque nos próximos 15 dias</div>';
+    } else {
+      pinnedCards.innerHTML = '';
+      pinnedEvents.forEach(ev => {
+        const f = ev.fields;
+        const nome   = f['Match ID'] || f['Nome'] || f['Name'] || f['Evento'] || '—';
+        const inicio = f['Inicio do Evento BRT'] || f['Início do Evento BRT'] || '';
+        let hora = '', dataFmt = '';
+        if (inicio) {
+          const d = new Date(inicio);
+          hora = d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' });
+          const dBRT = new Date(d.getTime() - 3 * 3600000);
+          dataFmt = dBRT.toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: 'short' }).toUpperCase();
+        }
+        const nl = nome.toLowerCase();
+        const icon = PINNED_KEYS.find(k => nl.includes(k));
+        const emoji = (icon && PINNED_ICONS[icon]) || '⚽';
+        const card = document.createElement('div');
+        card.className = 'p3-pinned-card';
+        card.innerHTML = `
+          <div class="p3-pinned-icon">${emoji}</div>
+          <div class="p3-pinned-info">
+            <div class="p3-pinned-name" title="${nome}">${nome}</div>
+            <div class="p3-pinned-meta">
+              <span class="p3-pinned-date">${dataFmt}</span>
+              <span class="p3-pinned-hora">${hora}</span>
+            </div>
+          </div>
+        `;
+        pinnedCards.appendChild(card);
+      });
+    }
+  }
+
+  if (events.length === 0) {
+    body.innerHTML = '<div id="p3-empty">Nenhum evento nos próximos 15 dias</div>';
+    return;
+  }
+
+  // Agrupa por data BRT (YYYY-MM-DD)
+  const dias = {};
+  const diasOrdem = [];
+  events.forEach(ev => {
+    const inicio = ev.fields['Inicio do Evento BRT'] || ev.fields['Início do Evento BRT'] || '';
+    const d = new Date(inicio);
+    const dBRT = new Date(d.getTime() - 3 * 3600000);
+    const dKey = dBRT.toISOString().split('T')[0]; // "2026-03-11"
+    if (!dias[dKey]) { dias[dKey] = []; diasOrdem.push(dKey); }
+    dias[dKey].push(ev);
+  });
+
+  body.innerHTML = '';
+
+  diasOrdem.forEach(dKey => {
+    const [ano, mes, dia] = dKey.split('-');
+    const dataObj = new Date(Number(ano), Number(mes) - 1, Number(dia));
+    const diaNome = dataObj.toLocaleDateString('pt-BR', { weekday: 'long' }).toUpperCase();
+    const dataFmt = dataObj.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' }).toUpperCase();
+
+    const col = document.createElement('div');
+    col.className = 'agenda-day-col';
+
+    col.innerHTML = `
+      <div class="agenda-day-header">
+        <div class="agenda-day-name">${diaNome.split('-')[0].trim()}</div>
+        <div class="agenda-day-date">${dataFmt}</div>
+        <div class="agenda-day-count">${dias[dKey].length}</div>
+      </div>
+    `;
+
+    dias[dKey].forEach(ev => {
+      const f = ev.fields;
+      const nome   = f['Match ID'] || f['Nome'] || f['Name'] || f['Evento'] || '—';
+      const inicio = f['Inicio do Evento BRT'] || f['Início do Evento BRT'] || '';
+      const avRaw  = f['Audiovisual'] || f['Áudiovisual'] || f['Áudio Visual'] || '';
+      const av     = Array.isArray(avRaw)
+        ? avRaw.map(v => typeof v === 'object' ? (v.name || v.title || '') : String(v)).join(', ')
+        : String(avRaw || '');
+
+      let hora = '';
+      if (inicio) {
+        const d = new Date(inicio);
+        hora = d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' });
+      }
+
+      const destaque = agendaEhDestaque(nome);
+      // Destaque supremo: Brasileirão + Estúdio 1 ou Estúdio 2 (sem SWB)
+      const nomeL = nome.toLowerCase();
+      const avL   = av.toLowerCase();
+      // Normaliza removendo acentos para comparação robusta
+      const nomeNorm = nomeL.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      // Lê campo Padrão de Produção
+      const padraoProd = fieldText(f['Padrão de Produção'] || f['Padrao de Producao'] || f['Padrão'] || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      // Estúdio 1 ou Estúdio 2 sem sufixo SWB
+      const isEstudio = /estudio\s*[12](?!\s*\(swb\))/i.test(padraoProd);
+      const isSupremo = nomeNorm.includes('brasileir') && isEstudio;
+
+      const avChips = av
+        ? av.split(/[,/]/).map(n => n.trim()).filter(Boolean).map(n => `<span>${n}</span>`).join('')
+        : '';
+
+      const card = document.createElement('div');
+      if (isSupremo) {
+        card.className = 'agenda-card agenda-supremo';
+        card.innerHTML = `
+          <div class="agenda-supremo-badge">🏟️ JOGO PRINCIPAL · ESTÚDIO</div>
+          <div class="agenda-card-time">${hora || '—'}</div>
+          <div class="agenda-card-name">${nome}</div>
+          ${avChips ? `<div class="agenda-card-av">${avChips}</div>` : ''}
+        `;
+      } else {
+        card.className = 'agenda-card' + (destaque ? ' agenda-highlight' : '');
+        card.innerHTML = `
+          ${destaque ? '<div class="agenda-highlight-badge">⭐ DESTAQUE</div>' : ''}
+          <div class="agenda-card-time">${hora || '—'}</div>
+          <div class="agenda-card-name">${nome}</div>
+          ${avChips ? `<div class="agenda-card-av">${avChips}</div>` : ''}
+        `;
+      }
+      col.appendChild(card);
+    });
+
+    body.appendChild(col);
+  });
+}
+
+// ── TICKER DE ÚLTIMAS 24H ────────────────────────────────────────────────────
+async function fetchUltimas24h() {
+  // Busca registros modificados nas últimas 24h na tabela principal (Pedidos)
+  try {
+    const agora = new Date();
+    const limite = new Date(agora.getTime() - 24 * 60 * 60 * 1000);
+    const limiteISO = limite.toISOString();
+
+    // Usa filterByFormula para pegar registros modificados após o limite
+    const formula = encodeURIComponent(`IS_AFTER(LAST_MODIFIED_TIME(), '${limiteISO}')`);
+    const params = `filterByFormula=${formula}&pageSize=50&sort[0][field]=LAST_MODIFIED_TIME()&sort[0][direction]=desc`;
+    const res = await fetch(
+      `https://api.airtable.com/v0/${CONFIG.baseId}/${CONFIG.tableName}?${params}`,
+      { headers: { Authorization: `Bearer ${CONFIG.apiKey}` } }
+    );
+    if (!res.ok) return [];
+    const data = await res.json();
+    return data.records || [];
+  } catch (e) {
+    console.warn('Últimas 24h fetch error', e);
+    return [];
+  }
+}
+
+// Cache dos eventos da agenda para uso no ticker
+let _agendaEventsCache = [];
+
+function buildNewsTicker(records, agendaEvents) {
+  const track = document.getElementById('p3-news-track');
+  if (!track) return;
+
+  const f = CONFIG.f;
+  const items = [];
+
+  // ── 1. Atualizações de grade das últimas 24h ──
+  if (records && records.length > 0) {
+    items.push(`<span class="news-item"><span style="color:#818cf8;font-weight:900;letter-spacing:2px">📋 GRADE · ÚLTIMAS 24H</span></span>`);
+    records.forEach(rec => {
+      const tarefa = rec.fields[f.tarefa] || rec.fields['Tarefa'] || rec.fields['Nome'] || rec.fields['Name'] || '?';
+      const statusRaw = fieldText(rec.fields[f.status]) || '';
+      const info = STATUS_MAP[statusRaw];
+      const statusLabel = info ? info.label : statusRaw;
+      const statusEmoji = info ? info.icon : '•';
+      const entrega = rec.fields[f.entrega] || rec.fields['Responsável'] || '';
+      const editor = Array.isArray(entrega)
+        ? entrega.map(v => typeof v === 'object' ? (v.name || '') : String(v)).filter(Boolean).join(', ')
+        : String(entrega || '');
+      const mod = rec.fields['Last Modified'] || rec.fields['Última Modificação'] || '';
+      let horaStr = '';
+      if (mod) {
+        const d = new Date(mod);
+        horaStr = d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' });
+      }
+      items.push(
+        `<span class="news-item">`
+        + `${statusEmoji} `
+        + `<span class="news-status">[${statusLabel}]</span> `
+        + `<span class="news-name">${tarefa}</span>`
+        + (editor ? ` — <span style="color:#94a3b8">${editor}</span>` : '')
+        + (horaStr ? `<span class="news-time">${horaStr}</span>` : '')
+        + `</span>`
+      );
+    });
+    items.push(`<span class="news-item"><span style="color:rgba(255,255,255,0.15)">——————</span></span>`);
+  }
+
+  // ── 2. Mega Destaques: Brasileirão Estúdio 1/2 nas próximas 120h ──
+  const agora = new Date();
+  const fim120 = new Date(agora.getTime() + 120 * 60 * 60 * 1000);
+  const brasileiraoEvents = (agendaEvents || _agendaEventsCache).filter(ev => {
+    const nome = (ev.fields['Match ID'] || ev.fields['Nome'] || ev.fields['Name'] || ev.fields['Evento'] || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+    if (!nome.includes('brasileir')) return false;
+    const padrao = fieldText(ev.fields['Padrão de Produção'] || ev.fields['Padrao de Producao'] || ev.fields['Padrão'] || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    if (!/estudio\s*[12](?!\s*\(swb\))/i.test(padrao)) return false;
+    // Janela: próximas 120h
+    const inicio = ev.fields['Inicio do Evento BRT'] || ev.fields['Início do Evento BRT'] || '';
+    if (!inicio) return false;
+    const d = new Date(inicio);
+    return d >= agora && d <= fim120;
+  });
+
+  if (brasileiraoEvents.length > 0) {
+    items.push(`<span class="news-item"><span style="color:#fbbf24;font-weight:900;letter-spacing:2px">🏟️ MEGA DESTAQUE · PRÓX. 120H</span></span>`);
+    brasileiraoEvents.forEach(ev => {
+      const f2 = ev.fields;
+      const nome   = f2['Match ID'] || f2['Nome'] || f2['Name'] || f2['Evento'] || '—';
+      const inicio = f2['Inicio do Evento BRT'] || f2['Início do Evento BRT'] || '';
+      const padrao = fieldText(f2['Padrão de Produção'] || f2['Padrao de Producao'] || f2['Padrão'] || '');
+      let horaStr = '', dataStr = '';
+      if (inicio) {
+        const d = new Date(inicio);
+        horaStr = d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' });
+        dataStr = d.toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: 'short', timeZone: 'America/Sao_Paulo' }).toUpperCase();
+      }
+      items.push(
+        `<span class="news-item">`
+        + `🏆 <span style="color:#fbbf24;font-weight:900">BRASILEIRÃO</span> `
+        + `<span style="color:#fde68a;font-weight:700">${nome}</span>`
+        + (padrao ? ` <span style="color:#f59e0b;font-size:10px">[${padrao}]</span>` : '')
+        + (dataStr ? ` <span style="color:#f59e0b">${dataStr}</span>` : '')
+        + (horaStr ? ` <span style="color:#fbbf24;font-weight:700">${horaStr}</span>` : '')
+        + `</span>`
+      );
+    });
+  }
+
+  if (items.length === 0) {
+    track.innerHTML = '<span class="news-item"><span class="news-status">Sem atualizações nas últimas 24h · Nenhum mega destaque nas próximas 120h</span></span>';
+    return;
+  }
+
+  track.innerHTML = items.join(' &nbsp;&nbsp;·&nbsp;&nbsp; ');
+  const chars = track.textContent.length;
+  const duration = Math.max(40, Math.min(150, chars * 0.09));
+  track.style.animationDuration = duration + 's';
+}
+
+async function refreshNewsTicker() {
+  const records = await fetchUltimas24h();
+  buildNewsTicker(records, _agendaEventsCache);
+}
 
 function buildKanban(records) {
   const f = CONFIG.f;
@@ -2129,6 +2797,23 @@ async function refresh() {
       _escalaEventos = escalaEvents;
       buildEscala(escalaEvents);
       updateProximoEvento();
+
+      // Agenda 15 dias (Page 3)
+      try {
+        const agendaEvents = await fetchAgenda15Dias();
+        buildAgenda(agendaEvents);
+      } catch(e) {
+        console.warn('Erro ao carregar agenda:', e.message);
+        const pb = $('p3-body');
+        if (pb) pb.innerHTML = '<div id="p3-empty">Erro ao carregar agenda</div>';
+      }
+
+      // Ticker de últimas 24h (passa cache da agenda para destacar Brasileirão)
+      try {
+        const records24h = await fetchUltimas24h();
+        buildNewsTicker(records24h, agendaEvents);
+        _agendaEventsCache = agendaEvents; // salva cache
+      } catch(e) { console.warn('Ticker 24h erro:', e); }
     } catch(e) {
       console.warn('Erro ao carregar escala:', e.message);
       $('escala-list').innerHTML = '<div class="escala-empty">Erro ao carregar escala</div>';
@@ -2548,26 +3233,40 @@ let _p2MesesCarreg  = {};   // { nomeMes: rows[] } — cache por mês
 let _p2FiltroMes    = null; // null = tudo; string = filtra por mês
 let _currentPage    = 1;
 let _autoRotateTimer = null;
-const PAGE_ROTATE_MS = 5 * 60 * 1000;
+const PAGE_ROTATE_MS = 2 * 60 * 1000; // 2 minutos por página
 
 // ── Alternância automática ──────────────────────────────
 function startAutoRotate() {
   if (_autoRotateTimer) clearInterval(_autoRotateTimer);
   _autoRotateTimer = setInterval(() => {
-    switchPage(_currentPage === 1 ? 2 : 1, false);
+    const next = _currentPage >= 3 ? 1 : _currentPage + 1;
+    switchPage(next, false);
   }, PAGE_ROTATE_MS);
 }
 
 function switchPage(n, resetTimer = true) {
   _currentPage = n;
   const page2  = document.getElementById('page2');
+  const page3  = document.getElementById('page3');
   const main   = document.getElementById('main-content');
   const ticker = document.getElementById('ticker');
+  const app    = document.getElementById('app');
 
   document.querySelectorAll('.page-btn').forEach((b, i) => {
     b.classList.toggle('active', i === n - 1);
     if (i === n - 1) { b.style.animation = 'none'; void b.offsetWidth; b.style.animation = ''; }
   });
+  // Atualiza nav buttons da página 3
+  document.querySelectorAll('.p3-nav-btn').forEach((b, i) => {
+    b.classList.toggle('p3-nav-active', i === n - 1);
+  });
+
+  // Reset all
+  main.classList.remove('hidden');
+  page2.classList.remove('active');
+  page3.classList.remove('active');
+  app.classList.remove('p3-active');
+  ticker.style.display = '';
 
   if (n === 2) {
     main.classList.add('hidden');
@@ -2575,10 +3274,11 @@ function switchPage(n, resetTimer = true) {
     ticker.style.display = 'none';
     if (_p2AllRows.length === 0) carregarTudo();
     else renderRows(_p2FiltroMes ? _p2MesesCarreg[_p2FiltroMes] || [] : _p2AllRows);
-  } else {
-    main.classList.remove('hidden');
-    page2.classList.remove('active');
-    ticker.style.display = '';
+  } else if (n === 3) {
+    main.classList.add('hidden');
+    page3.classList.add('active');
+    app.classList.add('p3-active');
+    ticker.style.display = 'none';
   }
   if (resetTimer) startAutoRotate();
 }
@@ -2914,7 +3614,9 @@ if (!CONFIG.apiKey.startsWith('pat') && !CONFIG.apiKey.startsWith('key')) {
 } else {
   refresh();
   initModoFoco();
-  startAutoRotate(); // alterna entre páginas a cada 5 min
+  startAutoRotate(); // alterna entre páginas a cada 2 min
+  // Atualiza ticker de últimas 24h a cada 5 minutos
+  setInterval(() => { refreshNewsTicker().catch(()=>{}); }, 5 * 60 * 1000);
 }
 
 // Título dinâmico da aba
@@ -2929,6 +3631,36 @@ setInterval(() => {
 updateClock();
 setInterval(updateClock, 1000);
 setInterval(updateTimer, 1000);
+
+// ── Auto-scroll das colunas da agenda a cada 20s ─────────────────────────────
+(function() {
+  // Altura aproximada de 2 cards (card ~130px + gap 10px = ~140px × 2 ≈ 280px)
+  const SCROLL_STEP = 280;
+  const SCROLL_INTERVAL_MS = 20 * 1000; // 20 segundos
+
+  function scrollAgendaCols() {
+    // Só rola se a página 3 estiver visível
+    const page3 = document.getElementById('page3');
+    if (!page3 || !page3.classList.contains('active')) return;
+
+    const cols = page3.querySelectorAll('.agenda-day-col');
+    cols.forEach(col => {
+      const maxScroll = col.scrollHeight - col.clientHeight;
+      if (maxScroll <= 0) return; // coluna não tem overflow, nada a fazer
+
+      const next = col.scrollTop + SCROLL_STEP;
+      if (next >= maxScroll) {
+        // Chegou ao fim: volta ao topo suavemente após uma pausa
+        col.scrollTo({ top: maxScroll, behavior: 'smooth' });
+        setTimeout(() => col.scrollTo({ top: 0, behavior: 'smooth' }), 1200);
+      } else {
+        col.scrollTo({ top: next, behavior: 'smooth' });
+      }
+    });
+  }
+
+  setInterval(scrollAgendaCols, SCROLL_INTERVAL_MS);
+})();
 </script>
 </body>
 </html>
