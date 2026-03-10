@@ -3,6 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=1920, initial-scale=1.0">
+  <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="pragma" content="no-cache">
+  <meta http-equiv="expires" content="0">
   <title>Dashboard Audiovisual</title>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
@@ -1708,7 +1711,7 @@ const CONFIG = {
     <div id="p3-news-bar">
       <div id="p3-news-label">🏟️ DESTAQUES · AMANHÃ</div>
       <div id="p3-news-track-wrap">
-        <div id="p3-news-track">Aguardando dados da agenda...</div>
+        <div id="p3-news-track"></div>
       </div>
     </div>
   </div>
@@ -2820,17 +2823,14 @@ async function refresh() {
         if (pb) pb.innerHTML = '<div id="p3-empty">Erro ao carregar agenda</div>';
       }
 
-      // Ticker: sempre executa com o cache disponível (mesmo que agenda falhe)
+      // Ticker: mega destaques 120h + escala de amanhã — roda sempre, usa cache
       buildNewsTicker([], _agendaEventsCache);
 
-      // Ticker de últimas 24h (passa cache da agenda para destacar Brasileirão)
-      try {
-        const records24h = await fetchUltimas24h();
-        buildNewsTicker(records24h, _agendaEventsCache);
-      } catch(e) { console.warn('Ticker erro:', e); }
     } catch(e) {
       console.warn('Erro ao carregar escala:', e.message);
       $('escala-list').innerHTML = '<div class="escala-empty">Erro ao carregar escala</div>';
+      // Ticker roda mesmo se escala falhou
+      buildNewsTicker([], _agendaEventsCache);
     }
 
     // Alarmes — precisa do pct de capacidade calculado pelo buildEditorList
